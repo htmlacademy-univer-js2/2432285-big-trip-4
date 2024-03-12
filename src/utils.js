@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE} from './const'
+import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE} from './const';
 
 dayjs.extend(duration);
 
@@ -32,20 +32,20 @@ function humanizeDate(dueDate, format = DATE_FORMAT) {
 function getDateDifference(dateFrom, dateTo) {
   const difference = dayjs(dateTo).diff(dayjs(dateFrom));
 
-  let duration = 0;
+  let timeDifference = 0;
   switch (true) {
     case difference >= DATE_PERIODS.MSEC_IN_DAY:
-      duration = dayjs.duration(difference).format('DD[D] HH[H] mm[M]');
+      timeDifference = dayjs.duration(difference).format('DD[D] HH[H] mm[M]');
       break;
     case difference >= DATE_PERIODS.MSEC_IN_HOUR:
-      duration = dayjs.duration(difference).format('HH[H] mm[M]');
+      timeDifference = dayjs.duration(difference).format('HH[H] mm[M]');
       break;
     case difference < DATE_PERIODS.MSEC_IN_HOUR:
-      duration = dayjs.duration(difference).format('mm[M]');
+      timeDifference = dayjs.duration(difference).format('mm[M]');
       break;
   }
 
-  return duration;
+  return timeDifference;
 }
 
 function getRandomDate(previousDate = 0) {
@@ -63,7 +63,7 @@ function getRandomDate(previousDate = 0) {
   }
 
   if (date < previousDate) {
-    throw new Error(`New date is ${date} old date is ${previousDate}`)
+    throw new Error(`New date is ${date} old date is ${previousDate}`);
   }
 
   return date;

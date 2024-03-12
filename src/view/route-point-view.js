@@ -1,10 +1,10 @@
-import { createElement } from "../render";
+import { createElement } from '../render';
 import {getDateDifference, humanizeDate} from '../utils';
 
 function createRoutePointOffers(offers) {
   return (
     `<ul class="event__selected-offers">
-        ${offers.map(offer =>
+        ${offers.map((offer) =>
       `<li class="event__offer">
           <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;

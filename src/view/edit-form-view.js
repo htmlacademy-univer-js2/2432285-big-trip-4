@@ -1,17 +1,17 @@
-import { createElement } from "../render";
+import { createElement } from '../render';
 import {CITIES, POINT_TYPES, RANDOM_NUMBER_MIN_LIMIT} from '../const';
-import {getRandomNumber, hum, humanizeDate} from '../utils';
+import {getRandomNumber, humanizeDate} from '../utils';
 
 function createDestinationList() {
   return (`<datalist id="destination-list-1">
-                ${CITIES.map(city => `<option value="${city}"></option>`).join('')}
+                ${CITIES.map((city) => `<option value="${city}"></option>`).join('')}
             </datalist>`);
 }
 
 function createPhotosList(photos) {
   return (`        <div class="event__photos-container">
                       <div class="event__photos-tape">
-                      ${photos.map(photo => `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join('')}
+                      ${photos.map((photo) => `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join('')}
                       </div>
                     </div>`);
 }
@@ -28,8 +28,8 @@ function createEventTypesList() {
                       <fieldset class="event__type-group">
                         <legend class="visually-hidden">Event type</legend>
 
-                        ${POINT_TYPES.map(type =>
-                        `<div class="event__type-item">
+                        ${POINT_TYPES.map((type) =>
+      `<div class="event__type-item">
                           <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
                           <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type[0].toUpperCase() + type.slice(1)}</label>
                         </div>`).join('')}
@@ -45,7 +45,7 @@ function createOffersList(offers) {
     return isChecked ? 'checked' : '';
   }
 
-  let offersList = offers.map(offer =>
+  const offersList = offers.map((offer) =>
     `<div class="event__offer-selector">
                         <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${makeCheckedOrNotChecked()}>
                         <label class="event__offer-label" for="event-offer-luggage-1">
@@ -64,7 +64,7 @@ function createOffersList(offers) {
 }
 
 function createEditRoutePointTemplate(routePoint) {
-  const {basePrice, dateFrom, dateTo, destination, isFavorite, offers, type} = routePoint;
+  const {basePrice, dateFrom, dateTo, destination, offers, type} = routePoint;
 
   return (
     `<li class="trip-events__item">

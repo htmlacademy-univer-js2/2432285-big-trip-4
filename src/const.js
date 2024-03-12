@@ -1,8 +1,8 @@
-const POINT_TYPES = ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
-const CITIES = ["Amsterdam", "Paris", "Berlin", "Rome", "London", "Liverpool", "Manchester", "Stockholm", "Helsinki", "Moscow"]
-const DESCRIPTION = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. ";
+const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+const CITIES = ['Amsterdam', 'Paris', 'Berlin', 'Rome', 'London', 'Liverpool', 'Manchester', 'Stockholm', 'Helsinki', 'Moscow'];
+const DESCRIPTION = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. ';
 
-const PHOTO_ADDRESS = "https://loremflickr.com/248/152?random=";
+const PHOTO_ADDRESS = 'https://loremflickr.com/248/152?random=';
 
 const RANDOM_NUMBER_MAX_LIMIT = 5000;
 const RANDOM_NUMBER_MIN_LIMIT = 1;
@@ -35,6 +35,6 @@ const OFFERS = [
   'Choose seats'
 ];
 
-export {POINT_TYPES, CITIES, DESCRIPTION, OFFERS, PHOTO_ADDRESS}
-export {RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT}
-export {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE}
+export {POINT_TYPES, CITIES, DESCRIPTION, OFFERS, PHOTO_ADDRESS};
+export {RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT};
+export {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE};

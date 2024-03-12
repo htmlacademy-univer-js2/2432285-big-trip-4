@@ -1,5 +1,5 @@
-import {CITIES, DESCRIPTION, PHOTO_ADDRESS, RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT} from '../const'
-import {getRandomArrayElement , getRandomNumber} from '../utils'
+import {CITIES, DESCRIPTION, PHOTO_ADDRESS, RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT} from '../const';
+import {getRandomArrayElement , getRandomNumber} from '../utils';
 
 function generateRandomDestination() {
   return {
@@ -10,7 +10,7 @@ function generateRandomDestination() {
       src: PHOTO_ADDRESS + getRandomNumber(RANDOM_NUMBER_MIN_LIMIT, RANDOM_NUMBER_MAX_LIMIT),
       description: DESCRIPTION
     }))
-  }
+  };
 }
 
-export {generateRandomDestination}
+export {generateRandomDestination};

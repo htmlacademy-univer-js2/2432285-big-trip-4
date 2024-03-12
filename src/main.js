@@ -1,8 +1,8 @@
 import {render, RenderPosition} from './render';
 import Presenter from './presenter/presenter';
 
-import InfoView from "./view/info-view.js";
-import FiltersView from "./view/filters-view.js";
+import InfoView from './view/info-view.js';
+import FiltersView from './view/filters-view.js';
 import Model from './model/model';
 
 
