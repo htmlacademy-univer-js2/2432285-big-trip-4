@@ -1,8 +1,8 @@
-import { createElement } from "../render";
+import { createElement } from '../render';
 
 function createRoutePointsListViewTemplate() {
   return (
-    `<ul class="trip-events__list"></ul>`
+    '<ul class="trip-events__list"></ul>'
   );
 }
 
