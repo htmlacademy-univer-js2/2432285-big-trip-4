@@ -16,11 +16,11 @@ function createPhotosList(photos) {
                     </div>`);
 }
 
-function createEventTypesList() {
+function createEventTypesList(currentType) {
   return (`<div class="event__type-wrapper">
                     <label class="event__type  event__type-btn" for="event-type-toggle-1">
                       <span class="visually-hidden">Choose event type</span>
-                      <img class="event__type-icon" width="17" height="17" src="img/icons/flight.png" alt="Event type icon">
+                      <img class="event__type-icon" width="17" height="17" src="img/icons/${currentType}.png" alt="Event type icon">
                     </label>
                     <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -39,15 +39,9 @@ function createEventTypesList() {
 }
 
 function createOffersList(offers) {
-  function makeCheckedOrNotChecked(){
-    const isChecked = Boolean(getRandomNumber(0, RANDOM_NUMBER_MIN_LIMIT));
-
-    return isChecked ? 'checked' : '';
-  }
-
   const offersList = offers.map((offer) =>
     `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${makeCheckedOrNotChecked()}>
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage">
                         <label class="event__offer-label" for="event-offer-luggage-1">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -70,7 +64,7 @@ function createEditRoutePointTemplate(routePoint) {
     `<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
                 <header class="event__header">
-                   ${createEventTypesList()}
+                   ${createEventTypesList(type)}
 
                   <div class="event__field-group  event__field-group--destination">
                     <label class="event__label  event__type-output" for="event-destination-1">

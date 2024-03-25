@@ -30,9 +30,9 @@ function createRoutePointViewTemplate(routePoint) {
                 <h3 class="event__title">${type} ${destination.name}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
-                    <time class="event__start-time" datetime="${dateFrom}">${humanizeDate(dateFrom)}</time>
+                    <time class="event__start-time" datetime="${dateFrom.toISOString()}">${humanizeDate(dateFrom)}</time>
                     &mdash;
-                    <time class="event__end-time" datetime="${dateTo}">${humanizeDate(dateTo)}</time>
+                    <time class="event__end-time" datetime="${dateTo.toISOString}">${humanizeDate(dateTo)}</time>
                   </p>
                   <p class="event__duration">${getDateDifference(dateFrom, dateTo)}</p>
                 </div>

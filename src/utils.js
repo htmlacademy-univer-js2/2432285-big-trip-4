@@ -4,7 +4,7 @@ import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFEREN
 
 dayjs.extend(duration);
 
-const DATE_FORMAT = 'D MMMM';
+const DATE_FORMAT = 'HH:mm';
 const DATE_PERIODS = {
   HOURS_IN_DAY: 24,
   MINUTES_IN_HOUR: 60,
@@ -53,13 +53,16 @@ function getRandomDate(previousDate = 0) {
 
   if (typeof previousDate !== 'number') {
     date = dayjs(date)
-      .add(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day')
+      //.add(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day')
       .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
       .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
       .toDate();
   }
   else {
-    date = dayjs().subtract(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day').toDate();
+    date = dayjs()
+      .subtract(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
+      .subtract(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
+      .toDate();
   }
 
   if (date < previousDate) {
