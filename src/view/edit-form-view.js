@@ -1,6 +1,6 @@
 import { createElement } from '../render';
-import {CITIES, POINT_TYPES, RANDOM_NUMBER_MIN_LIMIT} from '../const';
-import {getRandomNumber, humanizeDate} from '../utils';
+import {CITIES, POINT_TYPES} from '../const';
+import {humanizeDate} from '../utils';
 
 function createDestinationList() {
   return (`<datalist id="destination-list-1">

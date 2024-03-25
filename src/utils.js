@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE} from './const';
+import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE} from './const';
 
 dayjs.extend(duration);
 
@@ -53,7 +53,6 @@ function getRandomDate(previousDate = 0) {
 
   if (typeof previousDate !== 'number') {
     date = dayjs(date)
-      //.add(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day')
       .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
       .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
       .toDate();

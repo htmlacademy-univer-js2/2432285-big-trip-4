@@ -8,7 +8,6 @@ const ROUTE_POINTS_COUNT = 4;
 const LIMIT = 5;
 
 export default class Model {
-  offersByTypes = this.generateOffersByType();
   routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.generateOffersByType()));
 
   getRoutePoints() {
