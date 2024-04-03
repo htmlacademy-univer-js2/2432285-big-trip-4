@@ -1,6 +1,6 @@
-import { createElement } from '../render';
 import {CITIES, POINT_TYPES} from '../const';
 import {humanizeDate} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 function createDestinationList() {
   return (`<datalist id="destination-list-1">
@@ -110,24 +110,14 @@ function createEditRoutePointTemplate(routePoint) {
   );
 }
 
-export default class EditRoutePointView {
-  getTemplate() {
-    return createEditRoutePointTemplate(this.routePoint);
+export default class EditRoutePointView extends AbstractView {
+  #routePoint = null;
+  get template() {
+    return createEditRoutePointTemplate(this.#routePoint);
   }
 
   constructor({routePoint}) {
-    this.routePoint = routePoint;
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+    super();
+    this.#routePoint = routePoint;
   }
 }
