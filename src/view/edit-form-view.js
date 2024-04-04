@@ -1,6 +1,6 @@
-import { createElement } from '../render';
 import {CITIES, POINT_TYPES} from '../const';
 import {humanizeDate} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 function createDestinationList() {
   return (`<datalist id="destination-list-1">
@@ -110,24 +110,34 @@ function createEditRoutePointTemplate(routePoint) {
   );
 }
 
-export default class EditRoutePointView {
-  getTemplate() {
-    return createEditRoutePointTemplate(this.routePoint);
+export default class EditRoutePointView extends AbstractView {
+  #routePoint = null;
+  #handleSubmitClick = null;
+  #handleRollUpClick = null;
+
+
+  get template() {
+    return createEditRoutePointTemplate(this.#routePoint);
   }
 
-  constructor({routePoint}) {
-    this.routePoint = routePoint;
+  constructor({routePoint, onSubmitClick, onRollUpClick}) {
+    super();
+    this.#routePoint = routePoint;
+
+    this.#handleSubmitClick = onSubmitClick;
+    this.#handleRollUpClick = onRollUpClick;
+
+    this.element.querySelector('.event__save-btn').addEventListener('submit', this.#submitClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #submitClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleSubmitClick();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #rollUpClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollUpClick();
+  };
 }

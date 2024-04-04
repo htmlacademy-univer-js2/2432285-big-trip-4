@@ -1,4 +1,4 @@
-import { createElement } from '../render';
+import AbstractView from '../framework/view/abstract-view';
 
 function createInfoViewTemplate() {
   return (
@@ -16,20 +16,8 @@ function createInfoViewTemplate() {
   );
 }
 
-export default class InfoView {
-  getTemplate() {
+export default class InfoView extends AbstractView {
+  get template() {
     return createInfoViewTemplate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }

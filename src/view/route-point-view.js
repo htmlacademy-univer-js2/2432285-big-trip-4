@@ -1,5 +1,5 @@
-import { createElement } from '../render';
 import {getDateDifference, humanizeDate} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 function createRoutePointOffers(offers) {
   return (
@@ -55,24 +55,24 @@ function createRoutePointViewTemplate(routePoint) {
   );
 }
 
-export default class RoutePointView {
-  getTemplate() {
-    return createRoutePointViewTemplate(this.routePoint);
+export default class RoutePointView extends AbstractView {
+  #routePoint = null;
+  #handleEditClick = null;
+
+  get template() {
+    return createRoutePointViewTemplate(this.#routePoint);
   }
 
-  constructor({routePoint}) {
-    this.routePoint = routePoint;
+  constructor({routePoint, onEditClick}) {
+    super();
+    this.#routePoint = routePoint;
+
+    this.#handleEditClick = onEditClick;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }
