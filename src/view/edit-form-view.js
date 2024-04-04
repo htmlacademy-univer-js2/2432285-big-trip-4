@@ -112,12 +112,32 @@ function createEditRoutePointTemplate(routePoint) {
 
 export default class EditRoutePointView extends AbstractView {
   #routePoint = null;
+  #handleSubmitClick = null;
+  #handleRollUpClick = null;
+
+
   get template() {
     return createEditRoutePointTemplate(this.#routePoint);
   }
 
-  constructor({routePoint}) {
+  constructor({routePoint, onSubmitClick, onRollUpClick}) {
     super();
     this.#routePoint = routePoint;
+
+    this.#handleSubmitClick = onSubmitClick;
+    this.#handleRollUpClick = onRollUpClick;
+
+    this.element.querySelector('.event__save-btn').addEventListener('submit', this.#submitClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
   }
+
+  #submitClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleSubmitClick();
+  };
+
+  #rollUpClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollUpClick();
+  };
 }

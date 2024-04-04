@@ -8,17 +8,17 @@ const ROUTE_POINTS_COUNT = 4;
 const LIMIT = 5;
 
 export default class Model {
-  routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.generateOffersByType()));
+  #routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.generateOffersByType()));
 
-  getRoutePoints() {
-    return this.routePoints;
+  get routePoints() {
+    return this.#routePoints;
   }
 
   generateOffersByType() {
     const offersCount = Math.floor(Math.random() * LIMIT + 1);
-    const offersByTypes = POINT_TYPES.map((type) => ({type,
-      offers: Array.from({length: getRandomNumber(RANDOM_NUMBER_MIN_LIMIT, offersCount)}, () => (generateRandomOffer()))}));
-
-    return offersByTypes;
+    return POINT_TYPES.map((type) => ({
+      type,
+      offers: Array.from({length: getRandomNumber(RANDOM_NUMBER_MIN_LIMIT, offersCount)}, () => (generateRandomOffer()))
+    }));
   }
 }

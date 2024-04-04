@@ -57,13 +57,22 @@ function createRoutePointViewTemplate(routePoint) {
 
 export default class RoutePointView extends AbstractView {
   #routePoint = null;
+  #handleEditClick = null;
 
   get template() {
     return createRoutePointViewTemplate(this.#routePoint);
   }
 
-  constructor({routePoint}) {
+  constructor({routePoint, onEditClick}) {
     super();
     this.#routePoint = routePoint;
+
+    this.#handleEditClick = onEditClick;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
+
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }
