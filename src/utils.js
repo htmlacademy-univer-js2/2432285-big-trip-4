@@ -1,6 +1,11 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE} from './const';
+import {
+  MAXIMUM_MINUTE_DIFFERENCE,
+  MAXIMUM_HOUR_DIFFERENCE,
+  FILTER_OPTIONS,
+  DEFAULT_FILTER
+} from './const';
 
 dayjs.extend(duration);
 
@@ -71,4 +76,22 @@ function getRandomDate(previousDate = 0) {
   return date;
 }
 
-export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference};
+function getFilterButtonsToDisable(routePoints) {
+  const buttonsToDisable = [];
+
+  for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
+    const filteredPoints = routePoints.filter(filter);
+    if (filteredPoints.length === 0) {
+      if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
+        buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
+        break;
+      }
+
+      buttonsToDisable.push(key);
+    }
+  }
+
+  return buttonsToDisable;
+}
+
+export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference, getFilterButtonsToDisable};
