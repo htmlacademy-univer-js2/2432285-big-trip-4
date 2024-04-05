@@ -1,30 +1,38 @@
 import SortView from '../view/sort-view';
 import RoutePointView from '../view/route-point-view';
-import PointsListView from '../view/route-points-list-view';
+import RoutePointsListView from '../view/route-points-list-view';
 import EditRoutePointView from '../view/edit-form-view';
 
-import {render, replace} from '../framework/render.js';
+import {remove, render, replace} from '../framework/render.js';
 
 
 export default class Presenter {
-  #eventListComponent = new PointsListView();
+  #eventListComponent = new RoutePointsListView();
   #container = null;
+  #routePoints = null;
   #model = null;
 
   constructor({container, model}) {
     this.#container = container;
     this.#model = model;
+    this.#routePoints = [...this.#model.routePoints];
   }
 
   init() {
-    const routePoints = [...this.#model.routePoints];
+    const sortViewComponent = new SortView({onSortChange: () => {
+      this.#routePoints.sort(sortViewComponent.currentSort);
+    }});
 
-    render(new SortView(), this.#container);
+    this.#routePoints.sort(sortViewComponent.currentSort);
+
+    render(sortViewComponent, this.#container);
     render(this.#eventListComponent, this.#container);
+    this.#renderAllRoutePoints();
+  }
 
-
-    for(let i = 0; i < routePoints.length; i++) {
-      this.#renderRoutePoint(routePoints[i]);
+  #renderAllRoutePoints() {
+    for(let i = 0; i < this.#routePoints.length; i++) {
+      this.#renderRoutePoint(this.#routePoints[i]);
     }
   }
 
