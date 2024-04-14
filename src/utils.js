@@ -94,4 +94,9 @@ function getFilterButtonsToDisable(routePoints) {
   return buttonsToDisable;
 }
 
-export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference, getFilterButtonsToDisable};
+function getTypeOffers(type, offersByTypes) {
+  return offersByTypes.filter((obj) => obj.type === type)[0].offers;
+}
+
+export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference, getFilterButtonsToDisable,
+  getTypeOffers};

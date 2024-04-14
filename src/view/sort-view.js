@@ -14,7 +14,7 @@ function createSortViewTemplate() {
   return (
     `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
             ${createSortItems()}
-          </form>`
+     </form>`
   );
 }
 

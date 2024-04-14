@@ -14,7 +14,7 @@ function createFiltersTemplate(disabledButtons) {
     `<form class="trip-filters" action="#" method="get">
         ${createFiltersButtons(disabledButtons)}
         <button class="visually-hidden" type="submit">Accept filter</button>
-      </form>`
+     </form>`
   );
 }
 

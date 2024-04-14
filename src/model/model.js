@@ -1,24 +1,22 @@
 import {generateRoutePoint} from '../mocks/route-point';
-import {POINT_TYPES, RANDOM_NUMBER_MIN_LIMIT} from '../const';
-import {getRandomNumber} from '../utils';
-import {generateRandomOffer} from '../mocks/offers';
+import {getOffersByTypes} from '../mocks/offers';
 
-const ROUTE_POINTS_COUNT = 4;
-
-const LIMIT = 5;
+const ROUTE_POINTS_COUNT = Math.floor(Math.random() * 5);
 
 export default class Model {
-  #routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.generateOffersByType()));
+  #routePoints = null;
+  #offersByTypes = null;
+
+  constructor() {
+    this.#offersByTypes = getOffersByTypes();
+    this.#routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint());
+  }
+
+  get offersByTypes() {
+    return this.#offersByTypes;
+  }
 
   get routePoints() {
     return this.#routePoints;
-  }
-
-  generateOffersByType() {
-    const offersCount = Math.floor(Math.random() * LIMIT + 1);
-    return POINT_TYPES.map((type) => ({
-      type,
-      offers: Array.from({length: getRandomNumber(RANDOM_NUMBER_MIN_LIMIT, offersCount)}, () => (generateRandomOffer()))
-    }));
   }
 }

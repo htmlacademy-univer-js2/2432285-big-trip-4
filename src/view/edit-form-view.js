@@ -1,5 +1,5 @@
 import {CITIES, POINT_TYPES} from '../const';
-import {humanizeDate} from '../utils';
+import {getTypeOffers, humanizeDate} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
 function createDestinationList() {
@@ -30,7 +30,7 @@ function createEventTypesList(currentType) {
 
                         ${POINT_TYPES.map((type) =>
       `<div class="event__type-item">
-                          <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
+                          <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${type === currentType ? 'checked' : ''}>
                           <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type[0].toUpperCase() + type.slice(1)}</label>
                         </div>`).join('')}
                       </fieldset>
@@ -38,10 +38,10 @@ function createEventTypesList(currentType) {
                   </div>`);
 }
 
-function createOffersList(offers) {
-  const offersList = offers.map((offer) =>
+function createOffersList(offers, typeOffers) {
+  const offersList = typeOffers.map((offer) =>
     `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage">
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${offers.includes(offer) ? 'checked' : ''}>
                         <label class="event__offer-label" for="event-offer-luggage-1">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -57,7 +57,7 @@ function createOffersList(offers) {
            </section>`);
 }
 
-function createEditRoutePointTemplate(routePoint) {
+function createEditRoutePointTemplate(routePoint, typeOffers) {
   const {basePrice, dateFrom, dateTo, destination, offers, type} = routePoint;
 
   return (
@@ -97,7 +97,7 @@ function createEditRoutePointTemplate(routePoint) {
                   </button>
                 </header>
                 <section class="event__details">
-                    ${createOffersList(offers)}
+                    ${createOffersList(offers, typeOffers)}
 
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
@@ -112,22 +112,25 @@ function createEditRoutePointTemplate(routePoint) {
 
 export default class EditRoutePointView extends AbstractView {
   #routePoint = null;
+  #typeOffers = null;
+
   #handleSubmitClick = null;
   #handleRollUpClick = null;
 
 
   get template() {
-    return createEditRoutePointTemplate(this.#routePoint);
+    return createEditRoutePointTemplate(this.#routePoint, this.#typeOffers);
   }
 
-  constructor({routePoint, onSubmitClick, onRollUpClick}) {
+  constructor({routePoint, offersByType, onSubmitClick, onRollUpClick}) {
     super();
     this.#routePoint = routePoint;
+    this.#typeOffers = getTypeOffers(routePoint.type, offersByType);
 
     this.#handleSubmitClick = onSubmitClick;
     this.#handleRollUpClick = onRollUpClick;
 
-    this.element.querySelector('.event__save-btn').addEventListener('submit', this.#submitClickHandler);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#submitClickHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
   }
 

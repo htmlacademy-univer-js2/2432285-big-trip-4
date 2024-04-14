@@ -17,6 +17,7 @@ export default class Presenter {
   #container = null;
   #routePoints = [];
   #filteredRoutePoints = [];
+  #offersByTypes = [];
   #model = null;
   #warning = null;
 
@@ -24,6 +25,7 @@ export default class Presenter {
     this.#container = container;
     this.#model = model;
     this.#routePoints = [...this.#model.routePoints];
+    this.#offersByTypes = this.#model.offersByTypes;
   }
 
   init() {
@@ -90,6 +92,7 @@ export default class Presenter {
     }});
 
     const editRoutePointComponent = new EditRoutePointView({routePoint: routePoint,
+      offersByType: this.#offersByTypes,
       onSubmitClick: () => {
         replaceEditToPointView();
         document.addEventListener('keydown', escKeyHandler);
