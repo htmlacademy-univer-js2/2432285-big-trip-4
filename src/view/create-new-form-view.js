@@ -163,7 +163,7 @@ function createNewFormViewTemplate() {
                   </section>
                 </section>
               </form>
-            </li>`
+    </li>`
   );
 }
 
