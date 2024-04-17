@@ -1,6 +1,6 @@
 import RoutePointView from '../view/route-point-view';
 import EditRoutePointView from '../view/edit-form-view';
-import {render, replace} from '../framework/render';
+import {remove, render, replace} from '../framework/render';
 
 
 export default class RoutePointPresenter {
@@ -11,19 +11,27 @@ export default class RoutePointPresenter {
   #routePointComponent = null;
   #editRoutePointComponent = null;
 
+  #handleDataChange = null;
+
   #offersByTypes = [];
 
-  constructor({task, offersByTypes, taskListContainer}) {
-    this.#routePoint = task;
+  constructor({offersByTypes, taskListContainer, onDataChange}) {
     this.#offersByTypes = offersByTypes;
     this.#pointListContainer = taskListContainer;
+    this.#handleDataChange = onDataChange;
   }
 
-  init() {
+  init(routePoint) {
+    this.#routePoint = routePoint;
+
+    const prevPointComponent = this.#routePointComponent;
+    const prevEditComponent = this.#editRoutePointComponent;
 
     this.#routePointComponent = new RoutePointView({
       routePoint: this.#routePoint,
-      onEditClick: this.#handleEditClick});
+      onEditClick: this.#handleEditClick,
+      onFavoriteClick: this.#handleFavoriteClick
+    });
 
     this.#editRoutePointComponent = new EditRoutePointView({
       routePoint: this.#routePoint,
@@ -32,7 +40,26 @@ export default class RoutePointPresenter {
       onRollUpClick: this.#handleRollUpClick
     });
 
-    render(this.#routePointComponent, this.#pointListContainer);
+    if (prevPointComponent === null || prevEditComponent === null) {
+      render(this.#routePointComponent, this.#pointListContainer);
+      return;
+    }
+
+    if (this.#pointListContainer.contains(prevPointComponent.element)) {
+      replace(this.#routePointComponent, prevPointComponent);
+    }
+
+    if (this.#pointListContainer.contains(prevEditComponent.element)) {
+      replace(this.#editRoutePointComponent, prevEditComponent);
+    }
+
+    remove(prevPointComponent);
+    remove(prevEditComponent);
+  }
+
+  destroy() {
+    remove(this.#routePointComponent);
+    remove(this.#editRoutePointComponent);
   }
 
   #replacePointToEditView() {
@@ -64,5 +91,9 @@ export default class RoutePointPresenter {
   #handleRollUpClick = () => {
     this.#replaceEditToPointView();
     document.addEventListener('keydown', this.#escKeyDownHandler);
+  };
+
+  #handleFavoriteClick = () => {
+    this.#handleDataChange({...this.#routePoint, isFavorite: !this.#routePoint.isFavorite});
   };
 }

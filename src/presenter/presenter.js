@@ -7,7 +7,7 @@ import FiltersView from '../view/filters-view';
 import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {NO_ROUTE_POINTS_WARNING} from '../const';
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
-import {getFilterButtonsToDisable} from '../utils';
+import {getFilterButtonsToDisable, updateItem} from '../utils';
 import RoutePointPresenter from './route-point-presenter';
 
 
@@ -18,6 +18,8 @@ export default class Presenter {
   #filteredRoutePoints = [];
   #model = null;
   #warning = null;
+
+  #pointPresenters = new Map();
 
   constructor({container, model}) {
     this.#container = container;
@@ -76,11 +78,23 @@ export default class Presenter {
   }
 
   #renderRoutePoint(routePoint) {
-    const point = new RoutePointPresenter({
-      task: routePoint,
+    const pointPresenter = new RoutePointPresenter({
       offersByTypes: this.#model.offersByTypes,
-      taskListContainer: this.#eventListComponent.element
+      taskListContainer: this.#eventListComponent.element,
+      onDataChange: this.#handleTaskChange
     });
-    point.init();
+    pointPresenter.init(routePoint);
+
+    this.#pointPresenters.set(routePoint.id, pointPresenter);
   }
+
+  #clearPointList() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
+  }
+
+  #handleTaskChange = (updatedPoint) => {
+    this.#routePoints = updateItem(this.#routePoints, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
+  };
 }
