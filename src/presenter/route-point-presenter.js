@@ -2,6 +2,10 @@ import RoutePointView from '../view/route-point-view';
 import EditRoutePointView from '../view/edit-form-view';
 import {remove, render, replace} from '../framework/render';
 
+const MODE = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING'
+};
 
 export default class RoutePointPresenter {
   #pointListContainer = null;
@@ -12,13 +16,16 @@ export default class RoutePointPresenter {
   #editRoutePointComponent = null;
 
   #handleDataChange = null;
+  #handleModeChange = null;
 
   #offersByTypes = [];
+  #mode = MODE.DEFAULT;
 
-  constructor({offersByTypes, taskListContainer, onDataChange}) {
+  constructor({offersByTypes, taskListContainer, onDataChange, onModeChange}) {
     this.#offersByTypes = offersByTypes;
     this.#pointListContainer = taskListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModeChange = onModeChange;
   }
 
   init(routePoint) {
@@ -45,11 +52,11 @@ export default class RoutePointPresenter {
       return;
     }
 
-    if (this.#pointListContainer.contains(prevPointComponent.element)) {
+    if (this.#mode === MODE.DEFAULT) {
       replace(this.#routePointComponent, prevPointComponent);
     }
 
-    if (this.#pointListContainer.contains(prevEditComponent.element)) {
+    if (this.#mode === MODE.EDITING) {
       replace(this.#editRoutePointComponent, prevEditComponent);
     }
 
@@ -62,14 +69,23 @@ export default class RoutePointPresenter {
     remove(this.#editRoutePointComponent);
   }
 
+  resetView() {
+    if (this.#mode !== MODE.DEFAULT) {
+      this.#replaceEditToPointView();
+    }
+  }
+
   #replacePointToEditView() {
     replace(this.#editRoutePointComponent, this.#routePointComponent);
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#handleModeChange();
+    this.#mode = MODE.EDITING;
   }
 
   #replaceEditToPointView() {
     replace(this.#routePointComponent, this.#editRoutePointComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = MODE.DEFAULT;
   }
 
   #escKeyDownHandler = (evt) => {
@@ -80,17 +96,14 @@ export default class RoutePointPresenter {
 
   #handleEditClick = () => {
     this.#replacePointToEditView();
-    document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #handleFormSubmit = () => {
     this.#replaceEditToPointView();
-    document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #handleRollUpClick = () => {
     this.#replaceEditToPointView();
-    document.addEventListener('keydown', this.#escKeyDownHandler);
   };
 
   #handleFavoriteClick = () => {
