@@ -1,6 +1,6 @@
 import Presenter from './presenter/presenter';
 import Model from './model/model';
-import {EVENTS_LIST} from './presenter/constElements';
+import {EVENTS_LIST} from './presenter/const-elements';
 
 
 const model = new Model();
