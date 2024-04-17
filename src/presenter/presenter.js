@@ -1,15 +1,14 @@
 import SortView from '../view/sort-view';
-import RoutePointView from '../view/route-point-view';
 import RoutePointsListView from '../view/route-points-list-view';
-import EditRoutePointView from '../view/edit-form-view';
 
-import {render, RenderPosition, replace} from '../framework/render.js';
+import {render, RenderPosition} from '../framework/render.js';
 import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
-import {SITE_LIST_FILTER, TRIP_MAIN} from './constElements';
+import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {NO_ROUTE_POINTS_WARNING} from '../const';
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
-import {getFilterButtonsToDisable} from '../utils';
+import {getFilterButtonsToDisable, updateItem} from '../utils';
+import RoutePointPresenter from './route-point-presenter';
 
 
 export default class Presenter {
@@ -17,15 +16,15 @@ export default class Presenter {
   #container = null;
   #routePoints = [];
   #filteredRoutePoints = [];
-  #offersByTypes = [];
   #model = null;
   #warning = null;
+
+  #pointPresenters = new Map();
 
   constructor({container, model}) {
     this.#container = container;
     this.#model = model;
     this.#routePoints = [...this.#model.routePoints];
-    this.#offersByTypes = this.#model.offersByTypes;
   }
 
   init() {
@@ -79,38 +78,28 @@ export default class Presenter {
   }
 
   #renderRoutePoint(routePoint) {
-    const escKeyHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        replaceEditToPointView();
-        document.removeEventListener('keydown', escKeyHandler);
-      }
-    };
-
-    const routePointComponent = new RoutePointView({routePoint: routePoint, onEditClick: () => {
-      replacePointToEditView();
-      document.addEventListener('keydown', escKeyHandler);
-    }});
-
-    const editRoutePointComponent = new EditRoutePointView({routePoint: routePoint,
-      offersByType: this.#offersByTypes,
-      onSubmitClick: () => {
-        replaceEditToPointView();
-        document.addEventListener('keydown', escKeyHandler);
-      },
-      onRollUpClick: () => {
-        replaceEditToPointView();
-        document.addEventListener('keydown', escKeyHandler);
-      }
+    const pointPresenter = new RoutePointPresenter({
+      offersByTypes: this.#model.offersByTypes,
+      taskListContainer: this.#eventListComponent.element,
+      onDataChange: this.#handleTaskChange,
+      onModeChange: this.#handleModeChange
     });
+    pointPresenter.init(routePoint);
 
-    function replacePointToEditView() {
-      replace(editRoutePointComponent, routePointComponent);
-    }
-
-    function replaceEditToPointView() {
-      replace(routePointComponent, editRoutePointComponent);
-    }
-
-    render(routePointComponent, this.#eventListComponent.element);
+    this.#pointPresenters.set(routePoint.id, pointPresenter);
   }
+
+  #clearPointList() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
+  }
+
+  #handleTaskChange = (updatedPoint) => {
+    this.#routePoints = updateItem(this.#routePoints, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
+  };
+
+  #handleModeChange = () => {
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  };
 }
