@@ -5,7 +5,7 @@ import {render, RenderPosition} from '../framework/render.js';
 import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
 import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
-import {NO_ROUTE_POINTS_WARNING} from '../const';
+import {DEFAULT_FILTER_NAME, NO_ROUTE_POINTS_WARNING} from '../const';
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
 import {getFilterButtonsToDisable, updateItem} from '../utils';
 import RoutePointPresenter from './route-point-presenter';
@@ -29,15 +29,8 @@ export default class Presenter {
 
   init() {
     render(new InfoView(), TRIP_MAIN, RenderPosition.AFTERBEGIN);
-    this.#renderFilter();
+    this.#renderSortedFilter();
 
-    const sortViewComponent = new SortView({onSortChange: () => {
-      this.#filteredRoutePoints.sort(sortViewComponent.currentSort);
-    }});
-
-    this.#filteredRoutePoints.sort(sortViewComponent.currentSort);
-
-    render(sortViewComponent, this.#container);
     render(this.#eventListComponent, this.#container);
 
     if (this.#warning === null){
@@ -48,21 +41,48 @@ export default class Presenter {
     }
   }
 
-  #renderFilter() {
-    let buttonsToDisable = getFilterButtonsToDisable(this.#routePoints);
+  #renderSortedFilter() {
+    const buttonsToDisable = this.#modifyDisabledFilterButtons();
 
-    if (buttonsToDisable.includes('EVERYTHING')) {
-      this.#warning = NO_ROUTE_POINTS_WARNING['EVERYTHING'];
-      buttonsToDisable = buttonsToDisable.slice(1);
-    }
-
+    const sortViewComponent = this.#createSortViewComponent();
     const filterViewComponent = new FiltersView({onFilterChange: () => {
-      this.#routePoints.filter(filterViewComponent.currentFilter);
+      this.#filteredRoutePoints = this.#routePoints.filter(filterViewComponent.currentFilter);
+      this.#filteredRoutePoints.sort(sortViewComponent.currentSort);
+      this.#clearPointList();
+      this.#renderAllRoutePoints();
     },
     buttonsToDisable});
 
     this.#filteredRoutePoints = this.#routePoints.filter(filterViewComponent.currentFilter);
     render(filterViewComponent, SITE_LIST_FILTER);
+    this.#renderSort(sortViewComponent);
+  }
+
+  #modifyDisabledFilterButtons() {
+    let buttonsToDisable = getFilterButtonsToDisable(this.#routePoints);
+
+    if (buttonsToDisable.includes(DEFAULT_FILTER_NAME)) {
+      this.#warning = NO_ROUTE_POINTS_WARNING[DEFAULT_FILTER_NAME];
+      buttonsToDisable = buttonsToDisable.slice(1);
+    }
+
+    return buttonsToDisable;
+  }
+
+  #renderSort(sortViewComponent) {
+    this.#filteredRoutePoints.sort(sortViewComponent.currentSort);
+
+    render(sortViewComponent, this.#container);
+  }
+
+  #createSortViewComponent() {
+    const sortViewComponent = new SortView({onSortChange: () => {
+      this.#filteredRoutePoints.sort(sortViewComponent.currentSort);
+      this.#clearPointList();
+      this.#renderAllRoutePoints();
+    }});
+
+    return sortViewComponent;
   }
 
   #renderNoRoutePointsWarning(warning) {
@@ -78,12 +98,13 @@ export default class Presenter {
   }
 
   #renderRoutePoint(routePoint) {
-    const pointPresenter = new RoutePointPresenter({
-      offersByTypes: this.#model.offersByTypes,
-      taskListContainer: this.#eventListComponent.element,
-      onDataChange: this.#handleTaskChange,
-      onModeChange: this.#handleModeChange
-    });
+    const pointPresenter = this.#pointPresenters.has(routePoint.id) ? this.#pointPresenters.get(routePoint.id) :
+      new RoutePointPresenter({
+        offersByTypes: this.#model.offersByTypes,
+        taskListContainer: this.#eventListComponent.element,
+        onDataChange: this.#handleTaskChange,
+        onModeChange: this.#handleModeChange
+      });
     pointPresenter.init(routePoint);
 
     this.#pointPresenters.set(routePoint.id, pointPresenter);

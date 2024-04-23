@@ -4,7 +4,7 @@ import {
   MAXIMUM_MINUTE_DIFFERENCE,
   MAXIMUM_HOUR_DIFFERENCE,
   FILTER_OPTIONS,
-  DEFAULT_FILTER
+  DEFAULT_FILTER, RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
 } from './const';
 
 dayjs.extend(duration);
@@ -54,27 +54,44 @@ function getDateDifference(dateFrom, dateTo) {
 }
 
 function getRandomDate(previousDate = 0) {
-  let date = dayjs();
+  let date;
 
   if (typeof previousDate !== 'number') {
-    date = dayjs(date)
-      .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-      .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-      .toDate();
-  }
-  else {
-    date = dayjs()
-      .subtract(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-      .subtract(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-      .toDate();
+    date = generateFutureDate(previousDate);
+  } else {
+    date = generateRandomDate();
   }
 
-  if (date < previousDate) {
-    throw new Error(`New date is ${date} old date is ${previousDate}`);
-  }
+  checkDateValidity(date, previousDate);
 
   return date;
 }
+
+function generateFutureDate(previousDate) {
+  return dayjs(previousDate)
+    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
+    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
+    .toDate();
+}
+
+function generateRandomDate() {
+  const isPastDate = getRandomNumber(0, RANDOM_NUMBER_MIN_LIMIT);
+  const date = isPastDate ?
+    dayjs().subtract(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day') :
+    dayjs();
+
+  return date
+    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
+    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
+    .toDate();
+}
+
+function checkDateValidity(date, previousDate) {
+  if (date < previousDate) {
+    throw new Error(`New date ${date} is older than previous date ${previousDate}`);
+  }
+}
+
 
 function getFilterButtonsToDisable(routePoints) {
   const buttonsToDisable = [];
