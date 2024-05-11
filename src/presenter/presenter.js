@@ -101,8 +101,9 @@ export default class Presenter {
     const pointPresenter = this.#pointPresenters.has(routePoint.id) ? this.#pointPresenters.get(routePoint.id) :
       new RoutePointPresenter({
         offersByTypes: this.#model.offersByTypes,
-        taskListContainer: this.#eventListComponent.element,
-        onDataChange: this.#handleTaskChange,
+        destinations: this.#model.destinations,
+        pointListContainer: this.#eventListComponent.element,
+        onDataChange: this.#handlePointChange,
         onModeChange: this.#handleModeChange
       });
     pointPresenter.init(routePoint);
@@ -115,7 +116,7 @@ export default class Presenter {
     this.#pointPresenters.clear();
   }
 
-  #handleTaskChange = (updatedPoint) => {
+  #handlePointChange = (updatedPoint) => {
     this.#routePoints = updateItem(this.#routePoints, updatedPoint);
     this.#pointPresenters.get(updatedPoint.id).init(updatedPoint);
   };
