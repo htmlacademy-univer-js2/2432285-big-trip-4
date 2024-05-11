@@ -16,7 +16,7 @@ function createRoutePointOffers(typeOffers) {
 
 
 function createRoutePointViewTemplate(routePoint, typeOffers, destinations) {
-  const {basePrice, dateFrom, dateTo, isFavorite, offers, type} = routePoint;
+  const {basePrice, dateFrom, dateTo, isFavorite, type} = routePoint;
   const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
   const favoriteClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
