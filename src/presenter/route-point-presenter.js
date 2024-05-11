@@ -19,11 +19,13 @@ export default class RoutePointPresenter {
   #handleModeChange = null;
 
   #offersByTypes = [];
+  #destinations = [];
   #mode = MODE.DEFAULT;
 
-  constructor({offersByTypes, taskListContainer, onDataChange, onModeChange}) {
+  constructor({offersByTypes, destinations, pointListContainer: pointsListContainer, onDataChange, onModeChange}) {
     this.#offersByTypes = offersByTypes;
-    this.#pointListContainer = taskListContainer;
+    this.#destinations = destinations;
+    this.#pointListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
   }
@@ -36,6 +38,8 @@ export default class RoutePointPresenter {
 
     this.#routePointComponent = new RoutePointView({
       routePoint: this.#routePoint,
+      offersByType: this.#offersByTypes,
+      destinations: this.#destinations,
       onEditClick: this.#handleEditClick,
       onFavoriteClick: this.#handleFavoriteClick
     });
@@ -43,6 +47,7 @@ export default class RoutePointPresenter {
     this.#editRoutePointComponent = new EditRoutePointView({
       routePoint: this.#routePoint,
       offersByType: this.#offersByTypes,
+      destinations: this.#destinations,
       onSubmitClick: this.#handleFormSubmit,
       onRollUpClick: this.#handleRollUpClick
     });
@@ -71,6 +76,8 @@ export default class RoutePointPresenter {
 
   resetView() {
     if (this.#mode !== MODE.DEFAULT) {
+      this.#editRoutePointComponent.reset(this.#routePoint);
+
       this.#replaceEditToPointView();
     }
   }
@@ -91,6 +98,7 @@ export default class RoutePointPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       this.#replaceEditToPointView();
+      this.#editRoutePointComponent.reset(this.#routePoint);
     }
   };
 
@@ -103,6 +111,7 @@ export default class RoutePointPresenter {
   };
 
   #handleRollUpClick = () => {
+    this.#editRoutePointComponent.reset(this.#routePoint);
     this.#replaceEditToPointView();
   };
 

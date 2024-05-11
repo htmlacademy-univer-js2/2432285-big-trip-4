@@ -17,7 +17,7 @@ function getOffersByTypes() {
 }
 
 function generateOffersByTypes() {
-  const offersCount = Math.floor(Math.random() * LIMIT + 1);
+  const offersCount = Math.floor(Math.random() * LIMIT);
   return POINT_TYPES.map((type) => ({
     type,
     offers: Array.from({length: getRandomNumber(RANDOM_NUMBER_MIN_LIMIT, offersCount)}, () => (generateRandomOffer()))

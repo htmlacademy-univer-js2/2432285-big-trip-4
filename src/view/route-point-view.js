@@ -1,10 +1,10 @@
-import {getDateDifference, humanizeDate} from '../utils';
+import {getDateDifference, getTypeOffers, humanizeDate} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createRoutePointOffers(offers) {
+function createRoutePointOffers(typeOffers) {
   return (
     `<ul class="event__selected-offers">
-        ${offers.map((offer) =>
+        ${typeOffers.map((offer) =>
       `<li class="event__offer">
           <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;
@@ -15,9 +15,9 @@ function createRoutePointOffers(offers) {
 }
 
 
-function createRoutePointViewTemplate(routePoint) {
-  const {basePrice, dateFrom, dateTo, destination, isFavorite, offers, type} = routePoint;
-
+function createRoutePointViewTemplate(routePoint, typeOffers, destinations) {
+  const {basePrice, dateFrom, dateTo, isFavorite, type} = routePoint;
+  const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
   const favoriteClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
@@ -27,7 +27,7 @@ function createRoutePointViewTemplate(routePoint) {
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${type} ${destination.name}</h3>
+                <h3 class="event__title">${type} ${currentDestination.name}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
                     <time class="event__start-time" datetime="${dateFrom.toISOString()}">${humanizeDate(dateFrom)}</time>
@@ -40,7 +40,7 @@ function createRoutePointViewTemplate(routePoint) {
                   &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
-                ${createRoutePointOffers(offers)}
+                ${createRoutePointOffers(typeOffers)}
                 <button class="event__favorite-btn ${favoriteClassName}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
                   <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -60,13 +60,18 @@ export default class RoutePointView extends AbstractView {
   #handleEditClick = null;
   #handleFavoriteClick = null;
 
+  #destinations = null;
+  #typeOffers = null;
+
   get template() {
-    return createRoutePointViewTemplate(this.#routePoint);
+    return createRoutePointViewTemplate(this.#routePoint, this.#typeOffers, this.#destinations);
   }
 
-  constructor({routePoint, onEditClick, onFavoriteClick}) {
+  constructor({routePoint, offersByType, destinations, onEditClick, onFavoriteClick}) {
     super();
     this.#routePoint = routePoint;
+    this.#typeOffers = getTypeOffers(routePoint.type, offersByType);
+    this.#destinations = destinations;
 
     this.#handleEditClick = onEditClick;
     this.#handleFavoriteClick = onFavoriteClick;
