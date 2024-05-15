@@ -1,15 +1,17 @@
 import {generateRoutePoint} from '../mocks/route-point';
 import {getOffersByTypes} from '../mocks/offers';
 import {generateRandomDestinationList} from '../mocks/destinations';
+import Observable from '../framework/observable';
 
 const ROUTE_POINTS_COUNT = Math.floor(Math.random() * 5);
 
-export default class Model {
+export default class Model extends Observable{
   #routePoints = null;
   #offersByTypes = null;
   #destinations = null;
 
   constructor() {
+    super();
     this.#offersByTypes = getOffersByTypes();
     this.#destinations = generateRandomDestinationList();
     this.#routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.#destinations));

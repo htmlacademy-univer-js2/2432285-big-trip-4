@@ -21,6 +21,21 @@ export default class Presenter {
 
   #pointPresenters = new Map();
 
+  get routePoints() {
+
+
+    return this.#model.routePoints;
+  }
+
+  get offersByTypes() {
+    return this.#model.offersByTypes;
+  }
+
+  get destinations() {
+    return this.#model.destinations;
+  }
+
+
   constructor({container, model}) {
     this.#container = container;
     this.#model = model;
