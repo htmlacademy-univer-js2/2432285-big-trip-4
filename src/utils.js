@@ -92,25 +92,6 @@ function checkDateValidity(date, previousDate) {
   }
 }
 
-
-function getFilterButtonsToDisable(routePoints) {
-  const buttonsToDisable = [];
-
-  for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
-    const filteredPoints = routePoints.filter(filter);
-    if (filteredPoints.length === 0) {
-      if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
-        buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
-        break;
-      }
-
-      buttonsToDisable.push(key);
-    }
-  }
-
-  return buttonsToDisable;
-}
-
 function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
