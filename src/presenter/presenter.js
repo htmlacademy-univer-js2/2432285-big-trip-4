@@ -7,7 +7,6 @@ import FiltersView from '../view/filters-view';
 import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {DEFAULT_FILTER_NAME, NO_ROUTE_POINTS_WARNING} from '../const';
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
-import {getFilterButtonsToDisable, updateItem} from '../utils';
 import RoutePointPresenter from './route-point-presenter';
 
 
@@ -43,7 +42,7 @@ export default class Presenter {
     render(this.#eventListComponent, this.#container);
 
     if (this.#warning === null){
-      this.#renderAllRoutePoints();
+      this.#renderAllRoutePoints(this.routePoints);
     }
     else {
       this.#renderNoRoutePointsWarning(this.#warning);
@@ -57,7 +56,7 @@ export default class Presenter {
     const filterViewComponent = new FiltersView({onFilterChange: () => {
       this.#model.currentFilter = filterViewComponent.currentFilter;
       this.#clearPointList();
-      this.#renderAllRoutePoints();
+      this.#renderAllRoutePoints(this.routePoints);
     },
     buttonsToDisable});
 
