@@ -54,7 +54,7 @@ function createOffersList(offers, typeOffers) {
                       </div>`).join('');
 }
 
-function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
+function createEditRoutePointTemplate(routePoint, offersByType, destinations) {
   const {basePrice, dateFrom, dateTo, offers, type} = routePoint;
   const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
 
@@ -94,12 +94,12 @@ function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
                     <span class="visually-hidden">Open event</span>
                   </button>
                 </header>
-                ${typeOffers.length === 0 ? '' : `
+                ${offersByType.length === 0 ? '' : `
                 <section class="event__details">
                     <section class="event__section  event__section--offers">
                       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                       <div class="event__available-offers">
-                      ${createOffersList(offers, typeOffers)}
+                      ${createOffersList(offers, getTypeOffers(routePoint.type, offersByType))}
                       </div>
                     </section>`}
 
@@ -116,7 +116,7 @@ function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
 
 export default class EditRoutePointView extends AbstractStatefulView {
   #routePoint = null;
-  #typeOffers = null;
+  #offersByType = null;
   #destinations = null;
 
   #handleSubmitClick = null;
@@ -130,13 +130,13 @@ export default class EditRoutePointView extends AbstractStatefulView {
 
 
   get template() {
-    return createEditRoutePointTemplate(this._state.routePoint, this.#typeOffers, this.#destinations);
+    return createEditRoutePointTemplate(this._state.routePoint, this.#offersByType, this.#destinations);
   }
 
   constructor({routePoint, offersByType, destinations, onSubmitClick, onRollUpClick}) {
     super();
     this.#routePoint = routePoint;
-    this.#typeOffers = getTypeOffers(routePoint.type, offersByType);
+    this.#offersByType = offersByType;
     this.#destinations = destinations;
 
     this.#handleSubmitClick = onSubmitClick;
