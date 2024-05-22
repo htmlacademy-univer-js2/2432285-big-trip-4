@@ -45,7 +45,7 @@ function createEventTypesList(currentType) {
 function createOffersList(offers, typeOffers) {
   return typeOffers.map((offer) =>
     `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${offers.includes(offer.id) ? 'checked' : ''}>
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="${offer.id}" ${offers.includes(offer.id) ? 'checked' : ''}>
                         <label class="event__offer-label" for="${offer.id}">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -196,14 +196,21 @@ export default class EditRoutePointView extends AbstractStatefulView {
     });
   };
 
-  #offerChangeHandler = () => {
-    const offersId = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'))
-      .map((checkbox) => checkbox.dataset.offerId);
+  #offerChangeHandler = (event) => {
+    const id = event.target.id;
+    const offers = this._state.routePoint.offers;
+    const index = offers.indexOf(id);
+
+    if (index !== -1) {
+      offers.splice(index, 1);
+    } else {
+      offers.push(id);
+    }
 
     this._setState({
       routePoint: {
         ...this._state.routePoint,
-        offers: offersId
+        offers: offers
       }
     });
   };
@@ -265,7 +272,7 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this._setState({
       routePoint:{
         ...this._state.routePoint,
-        dateFrom: userDate
+        dateTo: userDate
       }
     });
     this.#datepickerFrom.set('maxDate', this._state.routePoint.dateFrom);

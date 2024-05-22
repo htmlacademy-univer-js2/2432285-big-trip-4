@@ -46,8 +46,47 @@ export default class Model extends Observable{
     return buttonsToDisable;
   }
 
-  #updateItem(items, update) {
-    return items.map((item) => item.id === update.id ? update : item);
+  updatePoint(updateType, update) {
+    const index = this.#routePoints.findIndex((routePoint) => routePoint.id === update.id);
+
+    if (index === -1) {
+      throw new Error('Can\'t update unexisting route point');
+    }
+
+    this.#routePoints = [
+      ...this.#routePoints.slice(0, index),
+      update,
+      ...this.#routePoints.slice(index + 1),
+    ];
+
+    this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
+    this.#filteredRoutePoints.sort(this.#currentSort);
+
+    this._notify(updateType, update);
+  }
+
+  addPoint(updateType, update) {
+    this.#routePoints = [
+      update,
+      ...this.#routePoints,
+    ];
+
+    this._notify(updateType, update);
+  }
+
+  deletePoint(updateType, update) {
+    const index = this.#routePoints.findIndex((routePoint) => routePoint.id === update.id);
+
+    if (index === -1) {
+      throw new Error('Can\'t delete unexisting task');
+    }
+
+    this.#routePoints = [
+      ...this.#routePoints.slice(0, index),
+      ...this.#routePoints.slice(index + 1),
+    ];
+
+    this._notify(updateType, update);
   }
 
   get currentSort() {
@@ -60,7 +99,7 @@ export default class Model extends Observable{
 
   set currentSort(newSort) {
     this.#currentSort = newSort;
-    this.#filteredRoutePoints = this.#routePoints.sort(this.#currentSort);
+    this.#filteredRoutePoints.sort(this.#currentSort);
   }
 
   set currentFilter(newFilter) {

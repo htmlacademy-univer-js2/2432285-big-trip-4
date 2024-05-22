@@ -1,6 +1,7 @@
 import RoutePointView from '../view/route-point-view';
 import EditRoutePointView from '../view/edit-form-view';
 import {remove, render, replace} from '../framework/render';
+import {UPDATE_TYPE, USER_ACTION} from '../const';
 
 const MODE = {
   DEFAULT: 'DEFAULT',
@@ -106,7 +107,12 @@ export default class RoutePointPresenter {
     this.#replacePointToEditView();
   };
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (routePoint) => {
+    this.#handleDataChange(
+      USER_ACTION.UPDATE_POINT,
+      UPDATE_TYPE.MINOR,
+      routePoint,
+    );
     this.#replaceEditToPointView();
   };
 
@@ -116,6 +122,10 @@ export default class RoutePointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#routePoint, isFavorite: !this.#routePoint.isFavorite});
+    this.#handleDataChange(
+      USER_ACTION.UPDATE_POINT,
+      UPDATE_TYPE.MINOR,
+      {...this.#routePoint, isFavorite: !this.#routePoint.isFavorite},
+    );
   };
 }

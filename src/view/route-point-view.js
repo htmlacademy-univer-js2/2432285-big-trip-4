@@ -1,10 +1,12 @@
 import {getDateDifference, getTypeOffers, humanizeDate} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createRoutePointOffers(typeOffers) {
+function createRoutePointOffers(offers, offersByType) {
+  const currentOffers = offersByType.filter((offer) => (offers.includes(offer.id)));
+
   return (
     `<ul class="event__selected-offers">
-        ${typeOffers.map((offer) =>
+        ${currentOffers.map((offer) =>
       `<li class="event__offer">
           <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;
@@ -16,7 +18,7 @@ function createRoutePointOffers(typeOffers) {
 
 
 function createRoutePointViewTemplate(routePoint, typeOffers, destinations) {
-  const {basePrice, dateFrom, dateTo, isFavorite, type} = routePoint;
+  const {basePrice, dateFrom, dateTo, isFavorite, offers, type} = routePoint;
   const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
   const favoriteClassName = isFavorite ? 'event__favorite-btn--active' : '';
 
@@ -40,7 +42,7 @@ function createRoutePointViewTemplate(routePoint, typeOffers, destinations) {
                   &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
                 </p>
                 <h4 class="visually-hidden">Offers:</h4>
-                ${createRoutePointOffers(typeOffers)}
+                ${createRoutePointOffers(offers, typeOffers)}
                 <button class="event__favorite-btn ${favoriteClassName}" type="button">
                   <span class="visually-hidden">Add to favorite</span>
                   <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
