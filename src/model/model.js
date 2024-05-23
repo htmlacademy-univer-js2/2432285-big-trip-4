@@ -22,6 +22,10 @@ export default class Model extends Observable{
     this.#destinations = generateRandomDestinationList();
     this.#routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.#destinations));
 
+    this.#updateFilteredRoutePoints();
+  }
+
+  #updateFilteredRoutePoints() {
     this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
     this.#filteredRoutePoints.sort(this.#currentSort);
   }
@@ -39,8 +43,7 @@ export default class Model extends Observable{
       ...this.#routePoints.slice(index + 1),
     ];
 
-    this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
-    this.#filteredRoutePoints.sort(this.#currentSort);
+    this.#updateFilteredRoutePoints();
 
     this._notify(updateType, update);
   }
@@ -50,6 +53,8 @@ export default class Model extends Observable{
       update,
       ...this.#routePoints,
     ];
+
+    this.#updateFilteredRoutePoints();
 
     this._notify(updateType, update);
   }
@@ -65,6 +70,8 @@ export default class Model extends Observable{
       ...this.#routePoints.slice(0, index),
       ...this.#routePoints.slice(index + 1),
     ];
+
+    this.#updateFilteredRoutePoints();
 
     this._notify(updateType, update);
   }
@@ -84,8 +91,7 @@ export default class Model extends Observable{
 
   set currentFilter(newFilter) {
     this.#currentFilter = newFilter;
-    this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
-    this.#filteredRoutePoints.sort(this.#currentSort);
+    this.#updateFilteredRoutePoints();
   }
 
   get destinations() {
@@ -94,10 +100,6 @@ export default class Model extends Observable{
 
   get offersByTypes() {
     return this.#offersByTypes;
-  }
-
-  get routePoints() {
-    return this.#routePoints;
   }
 
   get filteredRoutePoints() {

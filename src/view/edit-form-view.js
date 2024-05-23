@@ -121,19 +121,17 @@ export default class EditRoutePointView extends AbstractStatefulView {
 
   #handleSubmitClick = null;
   #handleRollUpClick = null;
+  #handleDeleteClick = null;
 
   #datepickerFrom = null;
   #datepickerTo = null;
-
-  static parsePointToState = ({ routePoint }) => ({ routePoint });
-  static parseStateToPoint = (state) => state.routePoint;
 
 
   get template() {
     return createEditRoutePointTemplate(this._state.routePoint, this.#offersByType, this.#destinations);
   }
 
-  constructor({routePoint, offersByType, destinations, onSubmitClick, onRollUpClick}) {
+  constructor({routePoint, offersByType, destinations, onSubmitClick, onRollUpClick, onDeleteClick}) {
     super();
     this.#routePoint = routePoint;
     this.#offersByType = offersByType;
@@ -141,8 +139,9 @@ export default class EditRoutePointView extends AbstractStatefulView {
 
     this.#handleSubmitClick = onSubmitClick;
     this.#handleRollUpClick = onRollUpClick;
+    this.#handleDeleteClick = onDeleteClick;
 
-    this._setState(EditRoutePointView.parsePointToState({ routePoint }));
+    this._setState({routePoint});
     this._restoreHandlers();
   }
 
@@ -153,13 +152,18 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#offerChangeHandler);
-
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
     this.#setDatepicker();
   }
 
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(this._state.routePoint);
+  };
+
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleSubmitClick(EditRoutePointView.parseStateToPoint(this._state));
+    this.#handleSubmitClick(this._state.routePoint);
   };
 
   #rollUpClickHandler = (evt) => {

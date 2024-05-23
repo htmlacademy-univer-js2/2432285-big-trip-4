@@ -50,7 +50,8 @@ export default class RoutePointPresenter {
       offersByType: this.#offersByTypes,
       destinations: this.#destinations,
       onSubmitClick: this.#handleFormSubmit,
-      onRollUpClick: this.#handleRollUpClick
+      onRollUpClick: this.#handleRollUpClick,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (prevPointComponent === null || prevEditComponent === null) {
@@ -119,6 +120,14 @@ export default class RoutePointPresenter {
   #handleRollUpClick = () => {
     this.#editRoutePointComponent.reset(this.#routePoint);
     this.#replaceEditToPointView();
+  };
+
+  #handleDeleteClick = (task) => {
+    this.#handleDataChange(
+      USER_ACTION.DELETE_POINT,
+      UPDATE_TYPE.MINOR,
+      task,
+    );
   };
 
   #handleFavoriteClick = () => {

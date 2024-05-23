@@ -57,11 +57,13 @@ export default class Presenter {
 
       render(this.#eventListComponent, this.#container);
     }
-    if (this.#warning === null){
+    if (this.#warning === null & this.routePoints.length !== 0){
       this.#renderAllRoutePoints(this.routePoints);
     }
     else {
-      this.#renderNoRoutePointsWarning(this.#warning);
+      this.#renderNoRoutePointsWarning(this.#warning === null
+        ? NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName]
+        : this.#warning);
       this.#warning = null;
     }
   }
