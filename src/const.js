@@ -60,9 +60,9 @@ const DEFAULT_FILTER_NAME = 'EVERYTHING';
 
 const NO_ROUTE_POINTS_WARNING = {
   EVERYTHING: 'Click New Event to create your first',
-  FUTURE: 'There are no past events',
+  PAST: 'There are no past events',
   PRESENT: 'There are no current events',
-  PAST: 'There are no future events'
+  FUTURE: 'There are no future events'
 };
 
 const USER_ACTION = {

@@ -6,7 +6,6 @@ import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
 import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {
-  DEFAULT_FILTER_NAME,
   NO_ROUTE_POINTS_WARNING,
   UPDATE_TYPE,
   USER_ACTION
@@ -20,6 +19,7 @@ export default class Presenter {
   #filterViewComponent = null;
   #sortViewComponent = null;
   #infoViewComponent = null;
+  #noRoutePointsWarningComponent = null;
   #container = null;
   #model = null;
   #warning = null;
@@ -62,34 +62,29 @@ export default class Presenter {
     }
     else {
       this.#renderNoRoutePointsWarning(this.#warning);
+      this.#warning = null;
     }
   }
 
   #renderSortedFilter() {
-    const buttonsToDisable = this.#modifyDisabledFilterButtons();
-
     this.#sortViewComponent = this.#createSortViewComponent();
     this.#filterViewComponent = new FiltersView({onFilterChange: () => {
       this.#model.currentFilter = this.#filterViewComponent.currentFilter;
+      if (this.routePoints.length === 0) {
+        this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
+      }
       this.#handleModelEvent(UPDATE_TYPE.MINOR, null);
-    },
-    buttonsToDisable});
+    }});
 
     this.#model.currentFilter = this.#filterViewComponent.currentFilter;
+    if (this.routePoints.length === 0) {
+      this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
+    }
+
     render(this.#filterViewComponent, SITE_LIST_FILTER);
     render(this.#sortViewComponent, this.#container);
   }
 
-  #modifyDisabledFilterButtons() {
-    let buttonsToDisable = this.#model.getFilterButtonsToDisable();
-
-    if (buttonsToDisable.includes(DEFAULT_FILTER_NAME)) {
-      this.#warning = NO_ROUTE_POINTS_WARNING[DEFAULT_FILTER_NAME];
-      buttonsToDisable = buttonsToDisable.slice(1);
-    }
-
-    return buttonsToDisable;
-  }
 
   #createSortViewComponent() {
     const sortViewComponent = new SortView({onSortChange: () => {
@@ -101,9 +96,9 @@ export default class Presenter {
   }
 
   #renderNoRoutePointsWarning(warning) {
-    const noRoutePointsWarningComponent = new NoRoutePointsWarningView({warning});
+    this.#noRoutePointsWarningComponent = new NoRoutePointsWarningView({warning});
 
-    render(noRoutePointsWarningComponent, this.#eventListComponent.element);
+    render(this.#noRoutePointsWarningComponent, this.#eventListComponent.element);
   }
 
   #renderAllRoutePoints(routePoints) {
@@ -145,7 +140,7 @@ export default class Presenter {
         break;
       case UPDATE_TYPE.MINOR:
         this.#clearPointList();
-        this.#renderAllRoutePoints(this.routePoints);
+        this.#renderTrip({renderAfterHardReset: false});
         break;
       case UPDATE_TYPE.MAJOR:
         this.#clearPointList({resetAll: true});
@@ -157,6 +152,10 @@ export default class Presenter {
   #clearPointList({resetAll = false} = {}) {
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();
+
+    if (this.#noRoutePointsWarningComponent !== null) {
+      remove(this.#noRoutePointsWarningComponent);
+    }
 
     if (resetAll) {
       remove(this.#infoViewComponent);
