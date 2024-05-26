@@ -3,8 +3,7 @@ import duration from 'dayjs/plugin/duration';
 import {
   MAXIMUM_MINUTE_DIFFERENCE,
   MAXIMUM_HOUR_DIFFERENCE,
-  FILTER_OPTIONS,
-  DEFAULT_FILTER, RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
+  RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
 } from './const';
 
 dayjs.extend(duration);
@@ -92,32 +91,13 @@ function checkDateValidity(date, previousDate) {
   }
 }
 
-
-function getFilterButtonsToDisable(routePoints) {
-  const buttonsToDisable = [];
-
-  for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
-    const filteredPoints = routePoints.filter(filter);
-    if (filteredPoints.length === 0) {
-      if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
-        buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
-        break;
-      }
-
-      buttonsToDisable.push(key);
-    }
-  }
-
-  return buttonsToDisable;
-}
-
 function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
 
-function updateItem(items, update) {
-  return items.map((item) => item.id === update.id ? update : item);
+function getTypeOffersIds(type, offersByTypes) {
+  return getTypeOffers(type, offersByTypes).map((offer) => (offer.id));
 }
 
-export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference, getFilterButtonsToDisable,
-  getTypeOffers, updateItem};
+export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference,
+  getTypeOffers, getTypeOffersIds};

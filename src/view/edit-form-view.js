@@ -1,4 +1,4 @@
-import {POINT_TYPES} from '../const';
+import {DEFAULT_DESTINATION, DEFAULT_ROUTE_POINT, POINT_MODE, POINT_TYPES} from '../const';
 import {getTypeOffers, humanizeDate} from '../utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
@@ -45,7 +45,7 @@ function createEventTypesList(currentType) {
 function createOffersList(offers, typeOffers) {
   return typeOffers.map((offer) =>
     `<div class="event__offer-selector">
-                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${offers.includes(offer.id) ? 'checked' : ''}>
+                        <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="${offer.id}" ${offers.includes(offer.id) ? 'checked' : ''}>
                         <label class="event__offer-label" for="${offer.id}">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -54,9 +54,9 @@ function createOffersList(offers, typeOffers) {
                       </div>`).join('');
 }
 
-function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
+function createEditRoutePointTemplate(routePoint, offersByType, destinations, mode) {
   const {basePrice, dateFrom, dateTo, offers, type} = routePoint;
-  const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
+  const currentDestination = routePoint.destination !== null ? destinations.find((destination) => destination.id === routePoint.destination) : DEFAULT_DESTINATION;
 
   return (
     `<li class="trip-events__item">
@@ -85,21 +85,21 @@ function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
-                  <button class="event__rollup-btn" type="button">
+                  <button class="event__reset-btn" type="reset">${mode === POINT_MODE.EDITING ? 'Delete' : 'Cancel'}</button>
+                  ${mode === POINT_MODE.EDITING ? `<button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
-                  </button>
+                  </button>` : ''}
                 </header>
-                ${typeOffers.length === 0 ? '' : `
+                ${getTypeOffers(type, offersByType).length === 0 ? '' : `
                 <section class="event__details">
                     <section class="event__section  event__section--offers">
                       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                       <div class="event__available-offers">
-                      ${createOffersList(offers, typeOffers)}
+                      ${createOffersList(offers, getTypeOffers(routePoint.type, offersByType))}
                       </div>
                     </section>`}
 
@@ -116,50 +116,61 @@ function createEditRoutePointTemplate(routePoint, typeOffers, destinations) {
 
 export default class EditRoutePointView extends AbstractStatefulView {
   #routePoint = null;
-  #typeOffers = null;
+  #offersByType = null;
   #destinations = null;
 
   #handleSubmitClick = null;
   #handleRollUpClick = null;
+  #handleDeleteClick = null;
 
   #datepickerFrom = null;
   #datepickerTo = null;
 
-  static parsePointToState = ({ routePoint }) => ({ routePoint });
-  static parseStateToPoint = (state) => state.routePoint;
-
+  #mode = null;
 
   get template() {
-    return createEditRoutePointTemplate(this._state.routePoint, this.#typeOffers, this.#destinations);
+    return createEditRoutePointTemplate(this._state.routePoint, this.#offersByType, this.#destinations, this.#mode);
   }
 
-  constructor({routePoint, offersByType, destinations, onSubmitClick, onRollUpClick}) {
+  constructor({routePoint = DEFAULT_ROUTE_POINT(), offersByType, destinations,
+    onSubmitClick, onRollUpClick, onDeleteClick, mode = POINT_MODE.EDITING}) {
     super();
     this.#routePoint = routePoint;
-    this.#typeOffers = getTypeOffers(routePoint.type, offersByType);
+    this.#offersByType = offersByType;
     this.#destinations = destinations;
 
     this.#handleSubmitClick = onSubmitClick;
     this.#handleRollUpClick = onRollUpClick;
+    this.#handleDeleteClick = onDeleteClick;
 
-    this._setState(EditRoutePointView.parsePointToState({ routePoint }));
+    this.#mode = mode;
+
+    this._setState({routePoint});
     this._restoreHandlers();
   }
 
   _restoreHandlers() {
+    if (this.#mode === POINT_MODE.EDITING){
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
+    }
+
     this.element.querySelector('form').addEventListener('submit', this.#submitClickHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#offerChangeHandler);
-
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteClickHandler);
     this.#setDatepicker();
   }
 
+  #deleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(this._state.routePoint);
+  };
+
   #submitClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleSubmitClick(EditRoutePointView.parseStateToPoint(this._state));
+    this.#handleSubmitClick(this._state.routePoint);
   };
 
   #rollUpClickHandler = (evt) => {
@@ -171,7 +182,7 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this._setState({
       routePoint: {
         ...this._state.routePoint,
-        basePrice: evt.target.value,
+        basePrice: evt.target.valueAsNumber,
       }
     });
   };
@@ -187,23 +198,32 @@ export default class EditRoutePointView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
-    const destinationId = this.#destinations.find((destination) => destination.name === evt.target.value).id;
+    let currentDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
+    currentDestination = currentDestination === undefined ? undefined : currentDestination.id;
+
     this.updateElement({
       routePoint: {
         ...this._state.routePoint,
-        destination: destinationId,
+        destination: currentDestination,
       }
     });
   };
 
-  #offerChangeHandler = () => {
-    const offersId = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'))
-      .map((checkbox) => checkbox.dataset.offerId);
+  #offerChangeHandler = (event) => {
+    const id = event.target.id;
+    const offers = this._state.routePoint.offers;
+    const index = offers.indexOf(id);
+
+    if (index !== -1) {
+      offers.splice(index, 1);
+    } else {
+      offers.push(id);
+    }
 
     this._setState({
       routePoint: {
         ...this._state.routePoint,
-        offers: offersId
+        offers: offers
       }
     });
   };
@@ -250,7 +270,6 @@ export default class EditRoutePointView extends AbstractStatefulView {
     }
   };
 
-
   #routePointDateFromCloseHandler = ([userDate]) => {
     this._setState({
       routePoint:{
@@ -265,7 +284,7 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this._setState({
       routePoint:{
         ...this._state.routePoint,
-        dateFrom: userDate
+        dateTo: userDate
       }
     });
     this.#datepickerFrom.set('maxDate', this._state.routePoint.dateFrom);
