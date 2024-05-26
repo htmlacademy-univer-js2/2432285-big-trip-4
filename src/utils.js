@@ -3,8 +3,7 @@ import duration from 'dayjs/plugin/duration';
 import {
   MAXIMUM_MINUTE_DIFFERENCE,
   MAXIMUM_HOUR_DIFFERENCE,
-  FILTER_OPTIONS,
-  DEFAULT_FILTER, RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
+  RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
 } from './const';
 
 dayjs.extend(duration);
@@ -96,5 +95,9 @@ function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
 
+function getTypeOffersIds(type, offersByTypes) {
+  return getTypeOffers(type, offersByTypes).map((offer) => (offer.id));
+}
+
 export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference,
-  getTypeOffers};
+  getTypeOffers, getTypeOffersIds};

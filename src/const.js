@@ -65,6 +65,12 @@ const NO_ROUTE_POINTS_WARNING = {
   FUTURE: 'There are no future events'
 };
 
+const POINT_MODE = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+  CREATING: 'CREATING'
+};
+
 const USER_ACTION = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
@@ -77,8 +83,34 @@ const UPDATE_TYPE = {
   MAJOR: 'MAJOR',
 };
 
+const DEFAULT_POINT_TYPE = 'flight';
+
+const DEFAULT_DESTINATION_ID = null;
+
+const DEFAULT_DESTINATION = {
+  id: DEFAULT_DESTINATION_ID,
+  description: '',
+  name: '',
+  pictures: [],
+};
+
+function DEFAULT_ROUTE_POINT() {
+  return {
+    id: crypto.randomUUID(),
+    basePrice: 0,
+    dateFrom: dayjs().toDate(),
+    dateTo:  dayjs().toDate(),
+    destination: DEFAULT_DESTINATION_ID,
+    isFavorite: false,
+    offers: [],
+    type: DEFAULT_POINT_TYPE
+  };
+}
+
 export {POINT_TYPES, CITIES, DESCRIPTION, OFFERS, PHOTO_ADDRESS};
 export {RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT};
 export {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE};
 export {SORT_OPTIONS, DEFAULT_SORT, FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME, NO_ROUTE_POINTS_WARNING};
+export {POINT_MODE};
 export {USER_ACTION, UPDATE_TYPE};
+export {DEFAULT_ROUTE_POINT, DEFAULT_DESTINATION, DEFAULT_DESTINATION_ID, DEFAULT_POINT_TYPE};

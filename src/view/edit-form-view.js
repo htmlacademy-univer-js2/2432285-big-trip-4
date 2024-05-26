@@ -1,4 +1,4 @@
-import {POINT_TYPES} from '../const';
+import {DEFAULT_DESTINATION, DEFAULT_ROUTE_POINT, POINT_MODE, POINT_TYPES} from '../const';
 import {getTypeOffers, humanizeDate} from '../utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
@@ -54,9 +54,9 @@ function createOffersList(offers, typeOffers) {
                       </div>`).join('');
 }
 
-function createEditRoutePointTemplate(routePoint, offersByType, destinations) {
+function createEditRoutePointTemplate(routePoint, offersByType, destinations, mode) {
   const {basePrice, dateFrom, dateTo, offers, type} = routePoint;
-  const currentDestination = destinations.find((destination) => destination.id === routePoint.destination);
+  const currentDestination = routePoint.destination !== null ? destinations.find((destination) => destination.id === routePoint.destination) : DEFAULT_DESTINATION;
 
   return (
     `<li class="trip-events__item">
@@ -85,16 +85,16 @@ function createEditRoutePointTemplate(routePoint, offersByType, destinations) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
-                  <button class="event__rollup-btn" type="button">
+                  <button class="event__reset-btn" type="reset">${mode === POINT_MODE.EDITING ? 'Delete' : 'Cancel'}</button>
+                  ${mode === POINT_MODE.EDITING ? `<button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
-                  </button>
+                  </button>` : ''}
                 </header>
-                ${offersByType.length === 0 ? '' : `
+                ${getTypeOffers(type, offersByType).length === 0 ? '' : `
                 <section class="event__details">
                     <section class="event__section  event__section--offers">
                       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -126,12 +126,14 @@ export default class EditRoutePointView extends AbstractStatefulView {
   #datepickerFrom = null;
   #datepickerTo = null;
 
+  #mode = null;
 
   get template() {
-    return createEditRoutePointTemplate(this._state.routePoint, this.#offersByType, this.#destinations);
+    return createEditRoutePointTemplate(this._state.routePoint, this.#offersByType, this.#destinations, this.#mode);
   }
 
-  constructor({routePoint, offersByType, destinations, onSubmitClick, onRollUpClick, onDeleteClick}) {
+  constructor({routePoint = DEFAULT_ROUTE_POINT(), offersByType, destinations,
+    onSubmitClick, onRollUpClick, onDeleteClick, mode = POINT_MODE.EDITING}) {
     super();
     this.#routePoint = routePoint;
     this.#offersByType = offersByType;
@@ -141,13 +143,18 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this.#handleRollUpClick = onRollUpClick;
     this.#handleDeleteClick = onDeleteClick;
 
+    this.#mode = mode;
+
     this._setState({routePoint});
     this._restoreHandlers();
   }
 
   _restoreHandlers() {
+    if (this.#mode === POINT_MODE.EDITING){
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
+    }
+
     this.element.querySelector('form').addEventListener('submit', this.#submitClickHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpClickHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
@@ -175,7 +182,7 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this._setState({
       routePoint: {
         ...this._state.routePoint,
-        basePrice: evt.target.value,
+        basePrice: evt.target.valueAsNumber,
       }
     });
   };
@@ -191,11 +198,13 @@ export default class EditRoutePointView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
-    const destinationId = this.#destinations.find((destination) => destination.name === evt.target.value).id;
+    let currentDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
+    currentDestination = currentDestination === undefined ? undefined : currentDestination.id;
+
     this.updateElement({
       routePoint: {
         ...this._state.routePoint,
-        destination: destinationId,
+        destination: currentDestination,
       }
     });
   };
@@ -260,7 +269,6 @@ export default class EditRoutePointView extends AbstractStatefulView {
       );
     }
   };
-
 
   #routePointDateFromCloseHandler = ([userDate]) => {
     this._setState({

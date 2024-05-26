@@ -1,15 +1,10 @@
 import RoutePointView from '../view/route-point-view';
 import EditRoutePointView from '../view/edit-form-view';
 import {remove, render, replace} from '../framework/render';
-import {UPDATE_TYPE, USER_ACTION} from '../const';
-
-const MODE = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING'
-};
+import {POINT_MODE, UPDATE_TYPE, USER_ACTION} from '../const';
 
 export default class RoutePointPresenter {
-  #pointListContainer = null;
+  #pointsListContainer = null;
 
   #routePoint = null;
 
@@ -21,12 +16,13 @@ export default class RoutePointPresenter {
 
   #offersByTypes = [];
   #destinations = [];
-  #mode = MODE.DEFAULT;
+  #mode = POINT_MODE.DEFAULT;
 
-  constructor({offersByTypes, destinations, pointListContainer: pointsListContainer, onDataChange, onModeChange}) {
+  constructor({offersByTypes, destinations, pointsListContainer, onDataChange, onModeChange}) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
-    this.#pointListContainer = pointsListContainer;
+
+    this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
   }
@@ -55,15 +51,15 @@ export default class RoutePointPresenter {
     });
 
     if (prevPointComponent === null || prevEditComponent === null) {
-      render(this.#routePointComponent, this.#pointListContainer);
+      render(this.#routePointComponent, this.#pointsListContainer);
       return;
     }
 
-    if (this.#mode === MODE.DEFAULT) {
+    if (this.#mode === POINT_MODE.DEFAULT) {
       replace(this.#routePointComponent, prevPointComponent);
     }
 
-    if (this.#mode === MODE.EDITING) {
+    if (this.#mode === POINT_MODE.EDITING) {
       replace(this.#editRoutePointComponent, prevEditComponent);
     }
 
@@ -77,7 +73,7 @@ export default class RoutePointPresenter {
   }
 
   resetView() {
-    if (this.#mode !== MODE.DEFAULT) {
+    if (this.#mode !== POINT_MODE.DEFAULT) {
       this.#editRoutePointComponent.reset(this.#routePoint);
 
       this.#replaceEditToPointView();
@@ -88,13 +84,13 @@ export default class RoutePointPresenter {
     replace(this.#editRoutePointComponent, this.#routePointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     this.#handleModeChange();
-    this.#mode = MODE.EDITING;
+    this.#mode = POINT_MODE.EDITING;
   }
 
   #replaceEditToPointView() {
     replace(this.#routePointComponent, this.#editRoutePointComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = MODE.DEFAULT;
+    this.#mode = POINT_MODE.DEFAULT;
   }
 
   #escKeyDownHandler = (evt) => {

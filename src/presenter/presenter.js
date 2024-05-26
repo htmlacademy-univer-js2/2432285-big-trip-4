@@ -4,18 +4,24 @@ import RoutePointsListView from '../view/route-points-list-view';
 import {remove, render, RenderPosition} from '../framework/render.js';
 import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
-import {SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
+import {ADD_POINT_BUTTON, SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {
+  DEFAULT_FILTER, DEFAULT_SORT,
   NO_ROUTE_POINTS_WARNING,
   UPDATE_TYPE,
   USER_ACTION
 } from '../const';
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
 import RoutePointPresenter from './route-point-presenter';
+import NewRoutePointPresenter from './new-route-point-presenter';
 
 
 export default class Presenter {
   #eventListComponent = new RoutePointsListView();
+
+  #addPointButton = ADD_POINT_BUTTON;
+  #newPointPresenter = null;
+
   #filterViewComponent = null;
   #sortViewComponent = null;
   #infoViewComponent = null;
@@ -43,6 +49,7 @@ export default class Presenter {
     this.#model = model;
 
     this.#model.addObserver(this.#handleModelEvent);
+    this.#addPointButton.addEventListener('click', this.#handleCreateNewPoint);
   }
 
   init() {
@@ -112,7 +119,7 @@ export default class Presenter {
       new RoutePointPresenter({
         offersByTypes: this.offersByTypes,
         destinations: this.destinations,
-        pointListContainer: this.#eventListComponent.element,
+        pointsListContainer: this.#eventListComponent.element,
         onDataChange: this.#handleViewAction,
         onModeChange: this.#handleModeChange
       });
@@ -169,4 +176,34 @@ export default class Presenter {
   #handleModeChange = () => {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
+
+  #resetSortAndFilter = () => {
+    this.#model.currentFilter = DEFAULT_FILTER;
+    this.#model.currentSort = DEFAULT_SORT;
+    this.#handleModelEvent(UPDATE_TYPE.MAJOR, null);
+  };
+
+  #handleCreateNewPoint = (evt) => {
+    evt.preventDefault();
+
+    this.#resetSortAndFilter();
+    if (this.routePoints.length === 0) {
+      this.#clearPointList();
+    }
+
+    this.#renderNewPoint();
+    this.#addPointButton.disabled = true;
+  };
+
+  #renderNewPoint() {
+    this.#newPointPresenter = new NewRoutePointPresenter({
+      offersByTypes: this.offersByTypes,
+      destinations: this.destinations,
+      addPointButton: this.#addPointButton,
+      pointsListContainer: this.#eventListComponent.element,
+      onDataChange: this.#handleViewAction
+    });
+
+    this.#newPointPresenter.init();
+  }
 }
