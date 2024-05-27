@@ -157,7 +157,7 @@ export default class RoutePointPresenter {
   #handleDeleteClick = (task) => {
     this.#handleDataChange(
       USER_ACTION.DELETE_POINT,
-      UPDATE_TYPE.MINOR,
+      UPDATE_TYPE.MAJOR,
       task,
     );
   };

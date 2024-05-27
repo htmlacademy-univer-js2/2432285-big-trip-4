@@ -6,7 +6,7 @@ import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
 import {ADD_POINT_BUTTON, SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {
-  DEFAULT_FILTER, DEFAULT_SORT,
+  DEFAULT_FILTER, DEFAULT_FILTER_NAME, DEFAULT_SORT,
   NO_ROUTE_POINTS_WARNING,
   UPDATE_TYPE,
   USER_ACTION
@@ -71,17 +71,17 @@ export default class Presenter {
   }
 
   #renderTrip({renderAfterHardReset = true} = {}) {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (renderAfterHardReset) {
-      this.#infoViewComponent = new InfoView();
+      this.#infoViewComponent = new InfoView(this.routePoints, this.destinations, this.offersByTypes);
       render(this.#infoViewComponent, TRIP_MAIN, RenderPosition.AFTERBEGIN);
       this.#renderSortedFilter();
 
       render(this.#eventListComponent, this.#container);
-    }
-
-    if (this.#isLoading) {
-      this.#renderLoading();
-      return;
     }
 
     if (this.#warning === null && this.routePoints.length !== 0){
@@ -96,6 +96,8 @@ export default class Presenter {
   }
 
   #renderSortedFilter() {
+    const buttonsToDisable = this.#modifyDisabledFilterButtons();
+
     this.#sortViewComponent = this.#createSortViewComponent();
     this.#filterViewComponent = new FiltersView({onFilterChange: () => {
       this.#model.currentFilter = this.#filterViewComponent.currentFilter;
@@ -103,7 +105,7 @@ export default class Presenter {
         this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
       }
       this.#handleModelEvent(UPDATE_TYPE.MINOR, null);
-    }});
+    }, buttonsToDisable});
 
     this.#model.currentFilter = this.#filterViewComponent.currentFilter;
     if (this.routePoints.length === 0) {
@@ -184,6 +186,16 @@ export default class Presenter {
 
     this.#uiBlocker.unblock();
   };
+
+  #modifyDisabledFilterButtons() {
+    let buttonsToDisable = this.#model.getFilterButtonsToDisable();
+
+    if (buttonsToDisable.includes(DEFAULT_FILTER_NAME)) {
+      this.#warning = NO_ROUTE_POINTS_WARNING[DEFAULT_FILTER_NAME];
+      buttonsToDisable = buttonsToDisable.slice(1);
+    }
+    return buttonsToDisable;
+  }
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
