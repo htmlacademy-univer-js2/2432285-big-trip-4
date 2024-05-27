@@ -52,11 +52,29 @@ export default class NewRoutePointPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
+  setSaving() {
+    this.#newPointComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.#newPointComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    // this.#newPointComponent.shake(resetFormState);
+  }
+
   #handleFormSubmit = (routePoint) => {
     if (routePoint.destination !== null) {
 
       this.#addPointButton.disabled = false;
-      this.destroy();
 
       this.#handleDataChange(
         USER_ACTION.ADD_POINT,

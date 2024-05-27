@@ -18,6 +18,7 @@ export default class RoutePointPresenter {
   #destinations = [];
   #mode = POINT_MODE.DEFAULT;
 
+
   constructor({offersByTypes, destinations, pointsListContainer, onDataChange, onModeChange}) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
@@ -60,7 +61,8 @@ export default class RoutePointPresenter {
     }
 
     if (this.#mode === POINT_MODE.EDITING) {
-      replace(this.#editRoutePointComponent, prevEditComponent);
+      replace(this.#routePointComponent, prevEditComponent);
+      this.#mode = POINT_MODE.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -70,6 +72,41 @@ export default class RoutePointPresenter {
   destroy() {
     remove(this.#routePointComponent);
     remove(this.#editRoutePointComponent);
+  }
+
+  setSaving() {
+    if (this.#mode === POINT_MODE.EDITING) {
+      this.#editRoutePointComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === POINT_MODE.EDITING) {
+      this.#editRoutePointComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === POINT_MODE.DEFAULT) {
+      this.#routePointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editRoutePointComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editRoutePointComponent.shake(resetFormState);
   }
 
   resetView() {
@@ -110,7 +147,6 @@ export default class RoutePointPresenter {
       UPDATE_TYPE.MINOR,
       routePoint,
     );
-    this.#replaceEditToPointView();
   };
 
   #handleRollUpClick = () => {

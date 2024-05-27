@@ -15,7 +15,12 @@ import NoRoutePointsWarningView from '../view/no-points-warning-view';
 import RoutePointPresenter from './route-point-presenter';
 import NewRoutePointPresenter from './new-route-point-presenter';
 import LoadingView from '../view/loading-view';
+import UiBlocker from '../framework/ui-blocker/ui-blocker';
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class Presenter {
   #eventListComponent = new RoutePointsListView();
@@ -33,6 +38,10 @@ export default class Presenter {
 
   #warning = null;
   #isLoading = true;
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT
+  });
 
   #pointPresenters = new Map();
 
@@ -139,18 +148,41 @@ export default class Presenter {
     this.#pointPresenters.set(routePoint.id, pointPresenter);
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case USER_ACTION.UPDATE_POINT:
-        this.#model.updatePoint(updateType, update);
+        this.#pointPresenters.get(update.id).setSaving();
+
+        try {
+          await this.#model.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
         break;
       case USER_ACTION.ADD_POINT:
-        this.#model.addPoint(updateType, update);
+        this.#newPointPresenter.setSaving();
+        try {
+          await this.#model.addPoint(updateType, update);
+        } catch(err) {
+          this.#newPointPresenter.setAborting();
+        }
+
+        this.#newPointPresenter.destroy();
         break;
       case USER_ACTION.DELETE_POINT:
-        this.#model.deletePoint(updateType, update);
+        this.#pointPresenters.get(update.id).setDeleting();
+
+        try {
+          await this.#model.deletePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
