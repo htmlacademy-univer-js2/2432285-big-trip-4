@@ -3,6 +3,8 @@ import ApiService from '../framework/api-service.js';
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
 };
 
 export default class TripApiService extends ApiService {
@@ -32,22 +34,41 @@ export default class TripApiService extends ApiService {
     return parsedResponse;
   }
 
-  #adaptToServer(routePoint) {
+  async addPoint(routePoint) {
+    const response = await this._load({
+      url: 'points',
+      method: Method.POST,
+      body: JSON.stringify(this.#adaptToServer(routePoint, true)),
+      headers: new Headers({'Content-Type': 'application/json'})
+    });
+
+    return await ApiService.parseResponse(response);
+  }
+
+  async deletePoint(pointId) {
+    await this._load({
+      url: `points/${pointId}`,
+      method: Method.DELETE,
+    });
+  }
+
+  #adaptToServer(routePoint, isAddition = false) {
     const adaptedPoint = {
-      ['id']: routePoint.id,
+      ...routePoint,
       ['base_price']: routePoint.basePrice,
-      ['date_from']: routePoint.dateFrom instanceof Date ? routePoint.dateFrom.toISOString() : null,
-      ['date_to']: routePoint.dateTo instanceof Date ? routePoint.dateTo.toISOString() : null,
-      ['destination']: routePoint.destination,
-      ['is_favorite']: routePoint.isFavorite,
-      ['offers']: routePoint.offers,
-      ['type']: routePoint.type
+      ['date_from']: new Date(routePoint.dateFrom).toISOString(),
+      ['date_to']: new Date(routePoint.dateTo).toISOString(),
+      ['is_favorite']: routePoint.isFavorite
     };
 
     delete adaptedPoint.basePrice;
     delete adaptedPoint.dateFrom;
     delete adaptedPoint.dateTo;
     delete adaptedPoint.isFavorite;
+    if (isAddition) {
+      delete adaptedPoint.id;
+    }
+
     return adaptedPoint;
   }
 }

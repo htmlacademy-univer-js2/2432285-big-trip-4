@@ -63,12 +63,6 @@ export default class Model extends Observable{
       throw new Error('Can\'t update unexisting route point');
     }
 
-    // this.#routePoints = [
-    //   ...this.#routePoints.slice(0, index),
-    //   update,
-    //   ...this.#routePoints.slice(index + 1),
-    // ];
-
     try {
       const response = await this.#pointsApiService.updatePoint(update);
       const updatedPoint = this.#adaptToClient(response);
@@ -77,42 +71,49 @@ export default class Model extends Observable{
         updatedPoint,
         ...this.#routePoints.slice(index + 1),
       ];
+
+      this.#updateFilteredRoutePoints();
       this._notify(updateType, updatedPoint);
-    } catch(err) {
+    }
+    catch(err) {
       throw new Error('Can\'t update task');
     }
-
-    this.#updateFilteredRoutePoints();
-
-    this._notify(updateType, update);
   }
 
-  addPoint(updateType, update) {
-    this.#routePoints = [
-      update,
-      ...this.#routePoints,
-    ];
+  async addPoint(updateType, update) {
+    try {
+      const response = await this.#pointsApiService.addPoint(update);
+      const newPoint = this.#adaptToClient(response);
+      this.#routePoints = [newPoint, ...this.#routePoints];
 
-    this.#updateFilteredRoutePoints();
-
-    this._notify(updateType, update);
+      this.#updateFilteredRoutePoints();
+      this._notify(updateType, newPoint);
+    }
+    catch(err) {
+      throw new Error('Can\'t add task');
+    }
   }
 
-  deletePoint(updateType, update) {
+  async deletePoint(updateType, update) {
     const index = this.#routePoints.findIndex((routePoint) => routePoint.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t delete unexisting task');
     }
 
-    this.#routePoints = [
-      ...this.#routePoints.slice(0, index),
-      ...this.#routePoints.slice(index + 1),
-    ];
+    try {
+      await this.#pointsApiService.deletePoint(update.id);
+      this.#routePoints = [
+        ...this.#routePoints.slice(0, index),
+        ...this.#routePoints.slice(index + 1),
+      ];
 
-    this.#updateFilteredRoutePoints();
-
-    this._notify(updateType, update);
+      this.#updateFilteredRoutePoints();
+      this._notify(updateType, null);
+    }
+    catch(err) {
+      throw new Error('Can\'t delete task');
+    }
   }
 
   get currentSort() {
