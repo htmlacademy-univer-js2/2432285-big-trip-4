@@ -95,9 +95,48 @@ function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
 
-function getTypeOffersIds(type, offersByTypes) {
-  return getTypeOffers(type, offersByTypes).map((offer) => (offer.id));
+function getTripInfoTitle(cities) {
+  if (cities.length > 3) {
+    return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
+  } else {
+    return cities.reduce((acc, city, index) => {
+      if (index !== cities.length - 1) {
+        acc += `${city} &mdash; `;
+      } else {
+        acc += `${city}`;
+      }
+      return acc;
+    }, '');
+  }
+}
+
+function getTripInfoStartDate(sortedPoints) {
+  return dayjs(sortedPoints[0].dateFrom).format('MMM DD');
+}
+
+function getTripInfoEndDate(sortedPoints) {
+  const startDate = sortedPoints[0].dateFrom;
+  const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
+  if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
+    return dayjs(endDate).format('DD');
+  } else {
+    return dayjs(endDate).format('MMM DD');
+  }
+}
+
+function getOffersCost(offerIds = [], offers = []) {
+  return offerIds.reduce(
+    (result, id) => result + (offers.find((offer) => offer.id === id)?.basePrice ?? 0),
+    0
+  );
+}
+
+function getTripCost(points = [], offers = []) {
+  return points.reduce(
+    (result, point) =>
+      result + point.basePrice + getOffersCost(point.offers, offers.find((offer) => point.type === offer.type)?.offers),
+    0);
 }
 
 export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference,
-  getTypeOffers, getTypeOffersIds};
+  getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};

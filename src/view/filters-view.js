@@ -1,18 +1,18 @@
 import AbstractView from '../framework/view/abstract-view';
 import {FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME} from '../const';
 
-function createFiltersButtons() {
+function createFiltersButtons(disabledButtons) {
   return Object.keys(FILTER_OPTIONS).map((filterName) =>
     `<div class="trip-filters__filter">
-        <input id="filter-${filterName.toLowerCase()}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filterName.toLowerCase()}" ${DEFAULT_FILTER === FILTER_OPTIONS[filterName] ? 'checked' : ''}>
+        <input id="filter-${filterName.toLowerCase()}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filterName.toLowerCase()}" ${DEFAULT_FILTER === FILTER_OPTIONS[filterName] ? 'checked' : ''} ${disabledButtons.includes(filterName) ? 'disabled' : ''}>
         <label class="trip-filters__filter-label" for="filter-${filterName.toLowerCase()}">${filterName}</label>
     </div>`).join('');
 }
 
-function createFiltersTemplate() {
+function createFiltersTemplate(disabledButtons) {
   return (
     `<form class="trip-filters" action="#" method="get">
-        ${createFiltersButtons()}
+        ${createFiltersButtons(disabledButtons)}
         <button class="visually-hidden" type="submit">Accept filter</button>
      </form>`
   );
@@ -36,8 +36,10 @@ export default class FiltersView extends AbstractView {
     return createFiltersTemplate(this.#disabledButtons);
   }
 
-  constructor({onFilterChange}) {
+  constructor({onFilterChange, buttonsToDisable}) {
     super();
+
+    this.#disabledButtons = buttonsToDisable;
 
     this.#handleFilterChange = onFilterChange;
     for (const filterName of Object.keys(FILTER_OPTIONS)){

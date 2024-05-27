@@ -1,5 +1,5 @@
 import Observable from '../framework/observable';
-import {DEFAULT_FILTER, DEFAULT_SORT, UPDATE_TYPE} from '../const';
+import {DEFAULT_FILTER, DEFAULT_SORT, FILTER_OPTIONS, UPDATE_TYPE} from '../const';
 
 
 export default class Model extends Observable{
@@ -33,6 +33,24 @@ export default class Model extends Observable{
     this.#offersByTypes = await this.#pointsApiService.offers;
     this.#updateFilteredRoutePoints();
     this._notify(UPDATE_TYPE.INIT);
+  }
+
+  getFilterButtonsToDisable() {
+    const buttonsToDisable = [];
+
+    for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
+      const filteredPoints = this.#routePoints.filter(filter);
+      if (filteredPoints.length === 0) {
+        if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
+          buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
+          break;
+        }
+
+        buttonsToDisable.push(key);
+      }
+    }
+
+    return buttonsToDisable;
   }
 
   #adaptToClient(routePoint) {
