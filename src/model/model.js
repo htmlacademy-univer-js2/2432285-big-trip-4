@@ -1,28 +1,54 @@
-import {generateRoutePoint} from '../mocks/route-point';
-import {getOffersByTypes} from '../mocks/offers';
-import {generateRandomDestinationList} from '../mocks/destinations';
 import Observable from '../framework/observable';
-import {DEFAULT_FILTER, DEFAULT_SORT} from '../const';
+import {DEFAULT_FILTER, DEFAULT_SORT, UPDATE_TYPE} from '../const';
 
-const ROUTE_POINTS_COUNT = Math.floor(Math.random() * 5);
 
 export default class Model extends Observable{
-  #routePoints = null;
-  #offersByTypes = null;
-  #destinations = null;
+  #routePoints = [];
+  #offersByTypes = [];
+  #destinations = [];
 
   #filteredRoutePoints = null;
+
+  #pointsApiService = null;
 
   #currentSort = DEFAULT_SORT;
   #currentFilter = DEFAULT_FILTER;
 
-  constructor() {
+  constructor({pointsApiService}) {
     super();
-    this.#offersByTypes = getOffersByTypes();
-    this.#destinations = generateRandomDestinationList();
-    this.#routePoints = Array.from({length: ROUTE_POINTS_COUNT}, () => generateRoutePoint(this.#destinations));
 
+    this.#pointsApiService = pointsApiService;
     this.#updateFilteredRoutePoints();
+  }
+
+  async init() {
+    try {
+      const routePoints = await this.#pointsApiService.routePoints;
+      this.#routePoints = routePoints.map(this.#adaptToClient);
+    } catch(err) {
+      this.#routePoints = [];
+    }
+
+    this.#destinations = await this.#pointsApiService.destinations;
+    this.#offersByTypes = await this.#pointsApiService.offers;
+    this.#updateFilteredRoutePoints();
+    this._notify(UPDATE_TYPE.INIT);
+  }
+
+  #adaptToClient(routePoint) {
+    const adaptedPoint = {
+      ...routePoint,
+      basePrice: routePoint['base_price'],
+      dateFrom: routePoint['date_from'] !== null ? new Date(routePoint['date_from']) : routePoint['date_from'],
+      dateTo: routePoint['date_to'] !== null ? new Date(routePoint['date_to']) : routePoint['date_to'],
+      isFavorite: routePoint['is_favorite']
+    };
+
+    delete adaptedPoint['base_price'];
+    delete adaptedPoint['date_from'];
+    delete adaptedPoint['date_to'];
+    delete adaptedPoint['is_favorite'];
+    return adaptedPoint;
   }
 
   #updateFilteredRoutePoints() {
@@ -30,18 +56,31 @@ export default class Model extends Observable{
     this.#filteredRoutePoints.sort(this.#currentSort);
   }
 
-  updatePoint(updateType, update) {
+  async updatePoint(updateType, update) {
     const index = this.#routePoints.findIndex((routePoint) => routePoint.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t update unexisting route point');
     }
 
-    this.#routePoints = [
-      ...this.#routePoints.slice(0, index),
-      update,
-      ...this.#routePoints.slice(index + 1),
-    ];
+    // this.#routePoints = [
+    //   ...this.#routePoints.slice(0, index),
+    //   update,
+    //   ...this.#routePoints.slice(index + 1),
+    // ];
+
+    try {
+      const response = await this.#pointsApiService.updatePoint(update);
+      const updatedPoint = this.#adaptToClient(response);
+      this.#routePoints = [
+        ...this.#routePoints.slice(0, index),
+        updatedPoint,
+        ...this.#routePoints.slice(index + 1),
+      ];
+      this._notify(updateType, updatedPoint);
+    } catch(err) {
+      throw new Error('Can\'t update task');
+    }
 
     this.#updateFilteredRoutePoints();
 
@@ -92,6 +131,10 @@ export default class Model extends Observable{
   set currentFilter(newFilter) {
     this.#currentFilter = newFilter;
     this.#updateFilteredRoutePoints();
+  }
+
+  get routePoints() {
+    return this.#routePoints;
   }
 
   get destinations() {

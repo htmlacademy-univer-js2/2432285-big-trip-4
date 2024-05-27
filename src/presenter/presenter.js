@@ -14,6 +14,7 @@ import {
 import NoRoutePointsWarningView from '../view/no-points-warning-view';
 import RoutePointPresenter from './route-point-presenter';
 import NewRoutePointPresenter from './new-route-point-presenter';
+import LoadingView from '../view/loading-view';
 
 
 export default class Presenter {
@@ -22,15 +23,19 @@ export default class Presenter {
   #addPointButton = ADD_POINT_BUTTON;
   #newPointPresenter = null;
 
+  #loadingComponent = new LoadingView();
   #filterViewComponent = null;
   #sortViewComponent = null;
   #infoViewComponent = null;
   #noRoutePointsWarningComponent = null;
   #container = null;
   #model = null;
+
   #warning = null;
+  #isLoading = true;
 
   #pointPresenters = new Map();
+
 
   get routePoints() {
     return this.#model.filteredRoutePoints;
@@ -64,7 +69,13 @@ export default class Presenter {
 
       render(this.#eventListComponent, this.#container);
     }
-    if (this.#warning === null & this.routePoints.length !== 0){
+
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
+    if (this.#warning === null && this.routePoints.length !== 0){
       this.#renderAllRoutePoints(this.routePoints);
     }
     else {
@@ -155,12 +166,21 @@ export default class Presenter {
         this.#clearPointList({resetAll: true});
         this.#renderTrip();
         break;
+      case UPDATE_TYPE.INIT:
+        this.#isLoading = false;
+        this.#addPointButton.disabled = false;
+        this.#clearPointList({resetAll: true});
+        this.#renderTrip();
+        break;
     }
   };
 
   #clearPointList({resetAll = false} = {}) {
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();
+    this.#addPointButton.disabled = false;
+    this.#warning = null;
+    remove(this.#loadingComponent);
 
     if (this.#noRoutePointsWarningComponent !== null) {
       remove(this.#noRoutePointsWarningComponent);
@@ -176,6 +196,11 @@ export default class Presenter {
   #handleModeChange = () => {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
+
+  #renderLoading() {
+    this.#addPointButton.disabled = true;
+    render(this.#loadingComponent, this.#eventListComponent.element, RenderPosition.AFTERBEGIN);
+  }
 
   #resetSortAndFilter = () => {
     this.#model.currentFilter = DEFAULT_FILTER;
