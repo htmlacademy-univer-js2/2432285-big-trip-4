@@ -54,21 +54,26 @@ export default class NewRoutePointPresenter {
 
   setSaving() {
     this.#newPointComponent.updateElement({
-      isDisabled: true,
-      isSaving: true,
+      networkState: {
+        isDisabled: true,
+        isSaving: true,
+        isDeleting: false
+      }
     });
   }
 
   setAborting() {
     const resetFormState = () => {
       this.#newPointComponent.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
+        networkState: {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
       });
     };
 
-    // this.#newPointComponent.shake(resetFormState);
+    this.#newPointComponent.shake(resetFormState);
   }
 
   #handleFormSubmit = (routePoint) => {

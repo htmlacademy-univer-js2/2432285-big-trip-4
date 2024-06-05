@@ -30,6 +30,10 @@ function getRandomNumber(min, max) {
 }
 
 function humanizeDate(dueDate, format = DATE_FORMAT) {
+  if (dueDate === null) {
+    return '';
+  }
+
   return dueDate ? dayjs(dueDate).format(format) : '';
 }
 

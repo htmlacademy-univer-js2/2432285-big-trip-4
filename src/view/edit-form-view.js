@@ -98,7 +98,7 @@ function createEditRoutePointTemplate(state, offersByType, destinations, mode) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}" ${isDisabled ? 'disabled' : '' }>
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}" min="0" max="100000" ${isDisabled ? 'disabled' : '' }>
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : '' }>
@@ -266,13 +266,26 @@ export default class EditRoutePointView extends AbstractStatefulView {
       'time_24hr': true
     };
 
+    this.#createDatepicker(dateFromElement, dateToElement, config);
+  };
+
+  #createDatepicker(dateFromElement, dateToElement, config) {
     if (this._state.routePoint.dateFrom) {
       this.#datepickerFrom = flatpickr(
         dateFromElement,
         {
           ...config,
-          defaultDate: this._state.dateFrom,
-          maxDate: this._state.dateTo,
+          defaultDate: this._state.routePoint.dateFrom,
+          maxDate: this._state.routePoint.dateTo,
+          onClose: this.#routePointDateFromCloseHandler,
+        },
+      );
+    }
+    else {
+      this.#datepickerFrom = flatpickr(
+        dateFromElement,
+        {
+          ...config,
           onClose: this.#routePointDateFromCloseHandler,
         },
       );
@@ -283,13 +296,22 @@ export default class EditRoutePointView extends AbstractStatefulView {
         dateToElement,
         {
           ...config,
-          defaultDate: this._state.dateTo,
-          minDate: this._state.dateFrom,
+          defaultDate: this._state.routePoint.dateTo,
+          minDate: this._state.routePoint.dateFrom,
           onClose: this.#routePointDateToCloseHandler,
         },
       );
     }
-  };
+    else {
+      this.#datepickerTo = flatpickr(
+        dateToElement,
+        {
+          ...config,
+          onClose: this.#routePointDateToCloseHandler,
+        },
+      );
+    }
+  }
 
   #routePointDateFromCloseHandler = ([userDate]) => {
     this._setState({
@@ -308,7 +330,7 @@ export default class EditRoutePointView extends AbstractStatefulView {
         dateTo: userDate
       }
     });
-    this.#datepickerFrom.set('maxDate', this._state.routePoint.dateFrom);
+    this.#datepickerFrom.set('maxDate', this._state.routePoint.dateTo);
   };
 
 

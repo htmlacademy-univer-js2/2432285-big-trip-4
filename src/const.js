@@ -99,8 +99,8 @@ function DEFAULT_ROUTE_POINT() {
   return {
     id: crypto.randomUUID(),
     basePrice: 0,
-    dateFrom: dayjs().toDate(),
-    dateTo:  dayjs().toDate(),
+    dateFrom: null,
+    dateTo:  null,
     destination: DEFAULT_DESTINATION_ID,
     isFavorite: false,
     offers: [],
