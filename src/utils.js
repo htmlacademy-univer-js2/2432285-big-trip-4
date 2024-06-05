@@ -1,10 +1,5 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {
-  MAXIMUM_MINUTE_DIFFERENCE,
-  MAXIMUM_HOUR_DIFFERENCE,
-  RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
-} from './const';
 
 dayjs.extend(duration);
 
@@ -17,17 +12,6 @@ const DATE_PERIODS = {
   MSEC_IN_DAY: 24 * 60 * 60 * 1000,
   MSEC_IN_HOUR: 60 * 60 * 1000
 };
-
-function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function getRandomNumber(min, max) {
-  const lowerNumber = Math.ceil(Math.min(min, max));
-  const upperNumber = Math.floor(Math.max(min, max));
-
-  return Math.floor(lowerNumber + Math.random() * (upperNumber - lowerNumber + 1));
-}
 
 function humanizeDate(dueDate, format = DATE_FORMAT) {
   if (dueDate === null) {
@@ -56,44 +40,6 @@ function getDateDifference(dateFrom, dateTo) {
   return timeDifference;
 }
 
-function getRandomDate(previousDate = 0) {
-  let date;
-
-  if (typeof previousDate !== 'number') {
-    date = generateFutureDate(previousDate);
-  } else {
-    date = generateRandomDate();
-  }
-
-  checkDateValidity(date, previousDate);
-
-  return date;
-}
-
-function generateFutureDate(previousDate) {
-  return dayjs(previousDate)
-    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-    .toDate();
-}
-
-function generateRandomDate() {
-  const isPastDate = getRandomNumber(0, RANDOM_NUMBER_MIN_LIMIT);
-  const date = isPastDate ?
-    dayjs().subtract(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day') :
-    dayjs();
-
-  return date
-    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-    .toDate();
-}
-
-function checkDateValidity(date, previousDate) {
-  if (date < previousDate) {
-    throw new Error(`New date ${date} is older than previous date ${previousDate}`);
-  }
-}
 
 function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
@@ -115,11 +61,16 @@ function getTripInfoTitle(cities) {
 }
 
 function getTripInfoStartDate(sortedPoints) {
-  return dayjs(sortedPoints[0].dateFrom).format('MMM DD');
+  return sortedPoints[0] ? dayjs(sortedPoints[0].dateFrom).format('MMM DD') : '';
 }
 
 function getTripInfoEndDate(sortedPoints) {
+  if (!sortedPoints[0]) {
+    return ';';
+  }
+
   const startDate = sortedPoints[0].dateFrom;
+
   const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
   if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
     return dayjs(endDate).format('DD');
@@ -142,5 +93,4 @@ function getTripCost(points = [], offers = []) {
     0);
 }
 
-export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference,
-  getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};
+export {humanizeDate, getDateDifference, getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};

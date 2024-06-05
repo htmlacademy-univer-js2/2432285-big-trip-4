@@ -118,11 +118,11 @@ function createEditRoutePointTemplate(state, offersByType, destinations, mode) {
                       </div>
                     </section>`}
 
-                  <section class="event__section  event__section--destination">
+                  ${currentDestination === DEFAULT_DESTINATION || (currentDestination.description.length === 0 && currentDestination.pictures.length === 0) ? '' : `<section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                     <p class="event__destination-description">${currentDestination.description}</p>
                     ${createPhotosList(currentDestination.pictures)}
-                  </section>
+                  </section>`}
                 </section>
               </form>
             </li>`
@@ -213,7 +213,8 @@ export default class EditRoutePointView extends AbstractStatefulView {
     this.updateElement({
       routePoint: {
         ...this._state.routePoint,
-        type: evt.target.value
+        type: evt.target.value,
+        offers: []
       },
     });
   };

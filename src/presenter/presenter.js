@@ -238,6 +238,10 @@ export default class Presenter {
   }
 
   #handleModeChange = () => {
+    if (this.#newPointPresenter !== null){
+      this.#newPointPresenter.destroy();
+    }
+
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
@@ -254,6 +258,7 @@ export default class Presenter {
 
   #handleCreateNewPoint = (evt) => {
     evt.preventDefault();
+    this.#handleModeChange();
 
     this.#resetSortAndFilter();
     if (this.routePoints.length === 0) {

@@ -97,7 +97,6 @@ const DEFAULT_DESTINATION = {
 
 function DEFAULT_ROUTE_POINT() {
   return {
-    id: crypto.randomUUID(),
     basePrice: 0,
     dateFrom: null,
     dateTo:  null,
@@ -116,7 +115,7 @@ const EDIT_POINT_VIEW_BUTTON_TEXT = {
   LOAD_DELETE: 'Deleting...'
 };
 
-const AUTHORIZATION = 'Basic qwertyuiopasdfghjklzxcvbnm0987654321';
+const AUTHORIZATION = 'Basic 12412412f';
 const END_POINT = 'https://21.objects.htmlacademy.pro/big-trip';
 
 export {POINT_TYPES, CITIES, DESCRIPTION, OFFERS, PHOTO_ADDRESS};
