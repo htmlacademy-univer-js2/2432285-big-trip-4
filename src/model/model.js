@@ -1,22 +1,17 @@
 import Observable from '../framework/observable';
-import {DEFAULT_FILTER, DEFAULT_SORT, FILTER_OPTIONS, UPDATE_TYPE} from '../const';
+import { DEFAULT_FILTER, DEFAULT_SORT, FILTER_OPTIONS, UPDATE_TYPE } from '../const';
 
-
-export default class Model extends Observable{
+export default class Model extends Observable {
   #routePoints = [];
   #offersByTypes = [];
   #destinations = [];
-
   #filteredRoutePoints = null;
-
   #pointsApiService = null;
-
   #currentSort = DEFAULT_SORT;
   #currentFilter = DEFAULT_FILTER;
 
-  constructor({pointsApiService}) {
+  constructor({ pointsApiService }) {
     super();
-
     this.#pointsApiService = pointsApiService;
     this.#updateFilteredRoutePoints();
   }
@@ -26,12 +21,17 @@ export default class Model extends Observable{
       const routePoints = await this.#pointsApiService.routePoints;
       this.#routePoints = routePoints.map(this.#adaptToClient);
       this.#updateFilteredRoutePoints();
-    } catch(err) {
+    } catch (err) {
       this.#routePoints = null;
     }
 
-    this.#destinations = await this.#pointsApiService.destinations;
-    this.#offersByTypes = await this.#pointsApiService.offers;
+    try {
+      this.#destinations = await this.#pointsApiService.destinations;
+      this.#offersByTypes = await this.#pointsApiService.offers;
+    } catch (err) {
+      this.#routePoints = null;
+    }
+
     this._notify(UPDATE_TYPE.INIT);
   }
 
@@ -65,7 +65,6 @@ export default class Model extends Observable{
   }
 
   #updateFilteredRoutePoints() {
-
     this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
     this.#filteredRoutePoints.sort(this.#currentSort);
   }
@@ -88,8 +87,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, updatedPoint);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t update task');
     }
   }
@@ -102,8 +100,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, newPoint);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t add task');
     }
   }
@@ -124,8 +121,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, null);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t delete task');
     }
   }

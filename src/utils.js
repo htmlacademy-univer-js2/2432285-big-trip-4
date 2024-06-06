@@ -1,17 +1,8 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import {DATE_FORMAT, DATE_PERIODS} from './const';
 
 dayjs.extend(duration);
-
-const DATE_FORMAT = 'HH:mm';
-const DATE_PERIODS = {
-  HOURS_IN_DAY: 24,
-  MINUTES_IN_HOUR: 60,
-  SECONDS_IN_MINUTE: 60,
-  MSEC_IN_SECOND: 1000,
-  MSEC_IN_DAY: 24 * 60 * 60 * 1000,
-  MSEC_IN_HOUR: 60 * 60 * 1000
-};
 
 function humanizeDate(dueDate, format = DATE_FORMAT) {
   if (dueDate === null) {
@@ -23,11 +14,11 @@ function humanizeDate(dueDate, format = DATE_FORMAT) {
 
 function getDateDifference(dateFrom, dateTo) {
   const difference = dayjs(dateTo).diff(dayjs(dateFrom));
+  const days = dayjs(dateTo).diff(dayjs(dateFrom), 'days');
 
   let timeDifference = 0;
-  const days = dayjs(dateTo).diff(dayjs(dateFrom), 'days');
   switch (true) {
-    case difference >= DATE_PERIODS.MSEC_IN_DAY * 100:
+    case difference >= DATE_PERIODS.MSEC_IN_HUNDRED_DAYS:
       timeDifference = dayjs.duration(difference).format(`${days}[D] HH[H] mm[M]`);
       break;
     case difference >= DATE_PERIODS.MSEC_IN_DAY:
@@ -48,19 +39,12 @@ function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
 
-function getTripInfoTitle(cities) {
-  if (cities.length > 3) {
-    return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
-  } else {
-    return cities.reduce((acc, city, index) => {
-      if (index !== cities.length - 1) {
-        acc += `${city} &mdash; `;
-      } else {
-        acc += `${city}`;
-      }
-      return acc;
-    }, '');
+function getTripInfoTitle(destinations) {
+  if (destinations.length > 3) {
+    return `${destinations[0]} &mdash; ... &mdash; ${destinations[destinations.length - 1]}`;
   }
+
+  return destinations.join(' &mdash; ');
 }
 
 function getTripInfoStartDate(sortedPoints) {
@@ -69,17 +53,15 @@ function getTripInfoStartDate(sortedPoints) {
 
 function getTripInfoEndDate(sortedPoints) {
   if (!sortedPoints[0]) {
-    return ';';
+    return '';
   }
 
-  const startDate = sortedPoints[0].dateFrom;
+  const startDate = dayjs(sortedPoints[0].dateFrom);
+  const endDate = dayjs(sortedPoints[sortedPoints.length - 1].dateTo);
 
-  const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
-  if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
-    return dayjs(endDate).format('DD MMM');
-  } else {
-    return dayjs(endDate).format('DD MMM');
-  }
+  return startDate.format('MMM') === endDate.format('MMM')
+    ? endDate.format('DD MMM')
+    : endDate.format('DD MMM');
 }
 
 function getOffersCost(offerIds = [], offers = []) {
@@ -90,14 +72,11 @@ function getOffersCost(offerIds = [], offers = []) {
 }
 
 function getTripCost(points = [], offers = []) {
-  if (points === null) {
-    return 0;
-  }
-
   return points.reduce(
     (result, point) =>
       result + point.basePrice + getOffersCost(point.offers, offers.find((offer) => point.type === offer.type)?.offers),
-    0);
+    0
+  );
 }
 
 export {humanizeDate, getDateDifference, getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};

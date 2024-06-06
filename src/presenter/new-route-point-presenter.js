@@ -1,28 +1,29 @@
 import EditRoutePointView from '../view/edit-form-view';
-import {POINT_MODE, UPDATE_TYPE, USER_ACTION} from '../const';
-import {remove, render, RenderPosition} from '../framework/render';
-
+import { POINT_MODE, UPDATE_TYPE, USER_ACTION } from '../const';
+import { remove, render, RenderPosition } from '../framework/render';
 
 export default class NewRoutePointPresenter {
   #pointsListContainer = null;
-
   #handleDataChange = null;
   #handleModelUpdateOnCancel = null;
   #hasAtLeastOnePoint = null;
-
   #newPointComponent = null;
-
   #addPointButton = null;
-
   #offersByTypes = [];
   #destinations = [];
 
-  constructor({offersByTypes, destinations, addPointButton, pointsListContainer, onDataChange, onCancel, hasAtLeastOnePoint}) {
+  constructor({
+    offersByTypes,
+    destinations,
+    addPointButton,
+    pointsListContainer,
+    onDataChange,
+    onCancel,
+    hasAtLeastOnePoint
+  }) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
-
     this.#addPointButton = addPointButton;
-
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleModelUpdateOnCancel = onCancel;
@@ -33,6 +34,7 @@ export default class NewRoutePointPresenter {
     if (this.#newPointComponent !== null) {
       return;
     }
+
     document.addEventListener('keydown', this.#escKeyDownHandler);
 
     this.#newPointComponent = new EditRoutePointView({
@@ -51,6 +53,7 @@ export default class NewRoutePointPresenter {
     if (this.#newPointComponent === null) {
       return;
     }
+
     remove(this.#newPointComponent);
     this.#newPointComponent = null;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
@@ -58,7 +61,7 @@ export default class NewRoutePointPresenter {
     this.#addPointButton.disabled = false;
 
     if (!this.#hasAtLeastOnePoint) {
-      this.#handleModelUpdateOnCancel(UPDATE_TYPE.MINOR, null);
+      this.#handleModelUpdateOnCancel(UPDATE_TYPE.MINOR);
     }
   }
 
@@ -88,7 +91,6 @@ export default class NewRoutePointPresenter {
 
   #handleFormSubmit = (routePoint) => {
     if (routePoint.destination !== null) {
-
       this.#addPointButton.disabled = false;
 
       this.#handleDataChange(
@@ -110,4 +112,3 @@ export default class NewRoutePointPresenter {
     }
   };
 }
-

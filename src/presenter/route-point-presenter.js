@@ -1,7 +1,7 @@
 import RoutePointView from '../view/route-point-view';
 import EditRoutePointView from '../view/edit-form-view';
-import {remove, render, replace} from '../framework/render';
-import {POINT_MODE, UPDATE_TYPE, USER_ACTION} from '../const';
+import { remove, render, replace } from '../framework/render';
+import { POINT_MODE, UPDATE_TYPE, USER_ACTION } from '../const';
 
 export default class RoutePointPresenter {
   #pointsListContainer = null;
@@ -18,8 +18,7 @@ export default class RoutePointPresenter {
   #destinations = [];
   #mode = POINT_MODE.DEFAULT;
 
-
-  constructor({offersByTypes, destinations, pointsListContainer, onDataChange, onModeChange}) {
+  constructor({ offersByTypes, destinations, pointsListContainer, onDataChange, onModeChange }) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
 
@@ -39,7 +38,7 @@ export default class RoutePointPresenter {
       offersByType: this.#offersByTypes,
       destinations: this.#destinations,
       onEditClick: this.#handleEditClick,
-      onFavoriteClick: this.#handleFavoriteClick
+      onFavoriteClick: this.#handleFavoriteClick,
     });
 
     this.#editRoutePointComponent = new EditRoutePointView({
@@ -48,7 +47,7 @@ export default class RoutePointPresenter {
       destinations: this.#destinations,
       onSubmitClick: this.#handleFormSubmit,
       onRollUpClick: this.#handleRollUpClick,
-      onDeleteClick: this.#handleDeleteClick
+      onDeleteClick: this.#handleDeleteClick,
     });
 
     if (prevPointComponent === null || prevEditComponent === null) {
@@ -76,24 +75,13 @@ export default class RoutePointPresenter {
 
   setSaving() {
     if (this.#mode === POINT_MODE.EDITING) {
-      this.#editRoutePointComponent.updateElement({
-        networkState: {
-          isDisabled: true,
-          isSaving: true,
-          isDeleting: false
-        }
-      });
+      this.#updateNetworkState({ isSaving: true });
     }
   }
 
   setDeleting() {
     if (this.#mode === POINT_MODE.EDITING) {
-      this.#editRoutePointComponent.updateElement({
-        networkState: {
-          isDisabled: true,
-          isDeleting: true,
-        }
-      });
+      this.#updateNetworkState({ isDeleting: true });
     }
   }
 
@@ -103,23 +91,12 @@ export default class RoutePointPresenter {
       return;
     }
 
-    const resetFormState = () => {
-      this.#editRoutePointComponent.updateElement({
-        networkState: {
-          isDisabled: false,
-          isSaving: false,
-          isDeleting: false,
-        }
-      });
-    };
-
-    this.#editRoutePointComponent.shake(resetFormState);
+    this.#editRoutePointComponent.shake(this.#resetFormState);
   }
 
   resetView() {
     if (this.#mode !== POINT_MODE.DEFAULT) {
       this.#editRoutePointComponent.reset(this.#routePoint);
-
       this.#replaceEditToPointView();
     }
   }
@@ -139,6 +116,7 @@ export default class RoutePointPresenter {
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
+      evt.preventDefault();
       this.#editRoutePointComponent.reset(this.#routePoint);
       this.#replaceEditToPointView();
     }
@@ -149,11 +127,7 @@ export default class RoutePointPresenter {
   };
 
   #handleFormSubmit = (routePoint) => {
-    this.#handleDataChange(
-      USER_ACTION.UPDATE_POINT,
-      UPDATE_TYPE.MAJOR,
-      routePoint,
-    );
+    this.#handleDataChange(USER_ACTION.UPDATE_POINT, UPDATE_TYPE.MAJOR, routePoint);
   };
 
   #handleRollUpClick = () => {
@@ -162,18 +136,34 @@ export default class RoutePointPresenter {
   };
 
   #handleDeleteClick = (task) => {
-    this.#handleDataChange(
-      USER_ACTION.DELETE_POINT,
-      UPDATE_TYPE.MAJOR,
-      task,
-    );
+    this.#handleDataChange(USER_ACTION.DELETE_POINT, UPDATE_TYPE.MAJOR, task);
   };
 
   #handleFavoriteClick = () => {
     this.#handleDataChange(
       USER_ACTION.UPDATE_POINT,
       UPDATE_TYPE.MINOR,
-      {...this.#routePoint, isFavorite: !this.#routePoint.isFavorite},
+      { ...this.#routePoint, isFavorite: !this.#routePoint.isFavorite }
     );
+  };
+
+  #updateNetworkState({ isSaving = false, isDeleting = false } = {}) {
+    this.#editRoutePointComponent.updateElement({
+      networkState: {
+        isDisabled: true,
+        isSaving,
+        isDeleting,
+      },
+    });
+  }
+
+  #resetFormState = () => {
+    this.#editRoutePointComponent.updateElement({
+      networkState: {
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      },
+    });
   };
 }
