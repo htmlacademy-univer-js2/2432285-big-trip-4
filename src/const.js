@@ -1,48 +1,12 @@
 import dayjs from 'dayjs';
-import {getDateDifference} from './utils';
 
 const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-const CITIES = ['Amsterdam', 'Paris', 'Berlin', 'Rome', 'London', 'Liverpool', 'Manchester', 'Stockholm', 'Helsinki', 'Moscow'];
-const DESCRIPTION = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. ';
-
-const PHOTO_ADDRESS = 'https://loremflickr.com/248/152?random=';
-
-const RANDOM_NUMBER_MAX_LIMIT = 5000;
-const RANDOM_NUMBER_MIN_LIMIT = 1;
-
-const MAXIMUM_DAY_DIFFERENCE = 4;
-const MAXIMUM_HOUR_DIFFERENCE = 23;
-const MAXIMUM_MINUTE_DIFFERENCE = 59;
-
-const OFFERS = [
-  'Suite upgrade for luxury stay',
-  'Book spa treatment',
-  'Complimentary breakfast included every morning',
-  'Request late check-out for convenience',
-  'Join loyalty program for rewards',
-  'Arrange airport transfer for convenience',
-  'Upgrade rental car for comfort',
-  'Guided city tour available',
-  'Room with stunning view',
-  'Book tickets for local attractions',
-  'Personalize room with extra amenities',
-  'Participate in on-site activities',
-  'Upgrade Wi-Fi',
-  'Arrange romantic dinner package',
-  'Use hotel business center',
-  'Request child-friendly amenities',
-  'Book private airport lounge',
-  'Order room service',
-  'Access executive lounge for perks',
-  'Guided hiking or biking tour',
-  'Choose seats'
-];
 
 const SORT_OPTIONS = {
   DAY: (firstPoint, secondPoint) => dayjs(firstPoint.dateFrom).isBefore(secondPoint.dateFrom) ? -1 : 1,
   EVENT: (firstPoint, secondPoint) => (firstPoint.type.toLowerCase()).localeCompare(secondPoint.type.toLowerCase()),
-  TIME: (firstPoint, secondPoint) => getDateDifference(firstPoint.dateFrom, firstPoint.dateTo) <= getDateDifference(secondPoint.dateFrom, secondPoint.dateTo) ? -1 : 1,
-  PRICE: (firstPoint, secondPoint) => firstPoint.basePrice - secondPoint.basePrice,
+  TIME: (firstPoint, secondPoint) => dayjs(secondPoint.dateTo).diff(dayjs(secondPoint.dateFrom)) - dayjs(firstPoint.dateTo).diff(dayjs(firstPoint.dateFrom)),
+  PRICE: (firstPoint, secondPoint) => secondPoint.basePrice - firstPoint.basePrice,
   OFFERS: (firstPoint, secondPoint) => firstPoint.offers.length - secondPoint.offers.length
 };
 
@@ -59,10 +23,11 @@ const DEFAULT_FILTER = FILTER_OPTIONS.EVERYTHING;
 const DEFAULT_FILTER_NAME = 'EVERYTHING';
 
 const NO_ROUTE_POINTS_WARNING = {
-  EVERYTHING: 'Click New Event to create your first',
+  EVERYTHING: 'Click New Event to create your first point',
   PAST: 'There are no past events',
   PRESENT: 'There are no current events',
-  FUTURE: 'There are no future events'
+  FUTURE: 'There are no future events',
+  LOAD_FAIL: 'Failed to load latest route information'
 };
 
 const POINT_MODE = {
@@ -97,10 +62,9 @@ const DEFAULT_DESTINATION = {
 
 function DEFAULT_ROUTE_POINT() {
   return {
-    id: crypto.randomUUID(),
     basePrice: 0,
-    dateFrom: dayjs().toDate(),
-    dateTo:  dayjs().toDate(),
+    dateFrom: null,
+    dateTo:  null,
     destination: DEFAULT_DESTINATION_ID,
     isFavorite: false,
     offers: [],
@@ -119,11 +83,39 @@ const EDIT_POINT_VIEW_BUTTON_TEXT = {
 const AUTHORIZATION = 'Basic qwertyuiopasdfghjklzxcvbnm0987654321';
 const END_POINT = 'https://21.objects.htmlacademy.pro/big-trip';
 
-export {POINT_TYPES, CITIES, DESCRIPTION, OFFERS, PHOTO_ADDRESS};
-export {RANDOM_NUMBER_MAX_LIMIT, RANDOM_NUMBER_MIN_LIMIT};
-export {MAXIMUM_MINUTE_DIFFERENCE, MAXIMUM_HOUR_DIFFERENCE, MAXIMUM_DAY_DIFFERENCE};
-export {SORT_OPTIONS, DEFAULT_SORT, FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME, NO_ROUTE_POINTS_WARNING};
-export {POINT_MODE, EDIT_POINT_VIEW_BUTTON_TEXT};
-export {USER_ACTION, UPDATE_TYPE};
-export {DEFAULT_ROUTE_POINT, DEFAULT_DESTINATION, DEFAULT_DESTINATION_ID, DEFAULT_POINT_TYPE};
-export {AUTHORIZATION, END_POINT};
+const DATE_FORMAT = 'HH:mm';
+const DATE_PERIODS = {
+  HOURS_IN_DAY: 24,
+  MINUTES_IN_HOUR: 60,
+  SECONDS_IN_MINUTE: 60,
+  MSEC_IN_SECOND: 1000,
+  MSEC_IN_DAY: 24 * 60 * 60 * 1000,
+  MSEC_IN_HUNDRED_DAYS : 24 * 60 * 60 * 1000 * 100,
+  MSEC_IN_HOUR: 60 * 60 * 1000
+};
+
+const DEFAULT_DATE_FORMAT = 'MMM DD';
+const DEFAULT_DATE_TIME_FORMAT = 'YYYY-MM-DDTHH:mm';
+
+export {POINT_TYPES,
+  SORT_OPTIONS,
+  DEFAULT_SORT,
+  FILTER_OPTIONS,
+  DEFAULT_FILTER,
+  DEFAULT_FILTER_NAME,
+  NO_ROUTE_POINTS_WARNING,
+  POINT_MODE,
+  EDIT_POINT_VIEW_BUTTON_TEXT,
+  USER_ACTION,
+  UPDATE_TYPE,
+  DEFAULT_ROUTE_POINT,
+  DEFAULT_DESTINATION,
+  DEFAULT_DESTINATION_ID,
+  DEFAULT_POINT_TYPE,
+  AUTHORIZATION,
+  END_POINT,
+  DATE_PERIODS,
+  DATE_FORMAT,
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_DATE_TIME_FORMAT
+};

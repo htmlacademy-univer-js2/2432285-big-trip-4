@@ -1,21 +1,37 @@
 import AbstractView from '../framework/view/abstract-view';
-import {FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME} from '../const';
+import { FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME } from '../const';
 
-function createFiltersButtons(disabledButtons) {
-  return Object.keys(FILTER_OPTIONS).map((filterName) =>
-    `<div class="trip-filters__filter">
-        <input id="filter-${filterName.toLowerCase()}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filterName.toLowerCase()}" ${DEFAULT_FILTER === FILTER_OPTIONS[filterName] ? 'checked' : ''} ${disabledButtons.includes(filterName) ? 'disabled' : ''}>
-        <label class="trip-filters__filter-label" for="filter-${filterName.toLowerCase()}">${filterName}</label>
-    </div>`).join('');
+function createFilterButton(filterName, isChecked, isDisabled) {
+  const lowerCaseFilterName = filterName.toLowerCase();
+  return `
+    <div class="trip-filters__filter">
+      <input
+        id="filter-${lowerCaseFilterName}"
+        class="trip-filters__filter-input visually-hidden"
+        type="radio"
+        name="trip-filter"
+        value="${lowerCaseFilterName}"
+        ${isChecked ? 'checked' : ''}
+        ${isDisabled ? 'disabled' : ''}
+      >
+      <label class="trip-filters__filter-label" for="filter-${lowerCaseFilterName}">
+        ${filterName}
+      </label>
+    </div>`;
 }
 
 function createFiltersTemplate(disabledButtons) {
-  return (
-    `<form class="trip-filters" action="#" method="get">
-        ${createFiltersButtons(disabledButtons)}
-        <button class="visually-hidden" type="submit">Accept filter</button>
-     </form>`
-  );
+  const filtersMarkup = Object.keys(FILTER_OPTIONS).map((filterName) => {
+    const isChecked = DEFAULT_FILTER === FILTER_OPTIONS[filterName];
+    const isDisabled = disabledButtons.includes(filterName);
+    return createFilterButton(filterName, isChecked, isDisabled);
+  }).join('');
+
+  return `
+    <form class="trip-filters" action="#" method="get">
+      ${filtersMarkup}
+      <button class="visually-hidden" type="submit">Accept filter</button>
+    </form>`;
 }
 
 export default class FiltersView extends AbstractView {
@@ -23,6 +39,13 @@ export default class FiltersView extends AbstractView {
   #currentFilterName = DEFAULT_FILTER_NAME;
   #handleFilterChange = null;
   #disabledButtons = [];
+
+  constructor({ onFilterChange, buttonsToDisable }) {
+    super();
+    this.#handleFilterChange = onFilterChange;
+    this.#disabledButtons = buttonsToDisable;
+    this.#setFilterChangeHandler();
+  }
 
   get currentFilter() {
     return this.#currentFilter;
@@ -36,24 +59,18 @@ export default class FiltersView extends AbstractView {
     return createFiltersTemplate(this.#disabledButtons);
   }
 
-  constructor({onFilterChange, buttonsToDisable}) {
-    super();
-
-    this.#disabledButtons = buttonsToDisable;
-
-    this.#handleFilterChange = onFilterChange;
-    for (const filterName of Object.keys(FILTER_OPTIONS)){
-      const test = `#filter-${filterName.toLowerCase()}`;
-      this.element.querySelector(test).addEventListener('change', this.#filterClickHandler);
+  #setFilterChangeHandler() {
+    for (const filterName of Object.keys(FILTER_OPTIONS)) {
+      const filterInput = this.element.querySelector(`#filter-${filterName.toLowerCase()}`);
+      filterInput.addEventListener('change', this.#filterChangeHandler);
     }
   }
 
-  #filterClickHandler = (evt) => {
+  #filterChangeHandler = (evt) => {
     evt.preventDefault();
-
-    this.#currentFilterName = evt.target.value.split('-')[0].toUpperCase();
-    this.#currentFilter = FILTER_OPTIONS[evt.target.value.split('-')[0].toUpperCase()];
-
+    const filterName = evt.target.value.toUpperCase();
+    this.#currentFilterName = filterName;
+    this.#currentFilter = FILTER_OPTIONS[filterName];
     this.#handleFilterChange();
   };
 }

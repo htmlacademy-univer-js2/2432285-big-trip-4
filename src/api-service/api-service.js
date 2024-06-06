@@ -38,7 +38,7 @@ export default class TripApiService extends ApiService {
     const response = await this._load({
       url: 'points',
       method: Method.POST,
-      body: JSON.stringify(this.#adaptToServer(routePoint, true)),
+      body: JSON.stringify(this.#adaptToServer(routePoint)),
       headers: new Headers({'Content-Type': 'application/json'})
     });
 
@@ -52,7 +52,7 @@ export default class TripApiService extends ApiService {
     });
   }
 
-  #adaptToServer(routePoint, isAddition = false) {
+  #adaptToServer(routePoint) {
     const adaptedPoint = {
       ...routePoint,
       ['base_price']: routePoint.basePrice,
@@ -65,9 +65,6 @@ export default class TripApiService extends ApiService {
     delete adaptedPoint.dateFrom;
     delete adaptedPoint.dateTo;
     delete adaptedPoint.isFavorite;
-    if (isAddition) {
-      delete adaptedPoint.id;
-    }
 
     return adaptedPoint;
   }

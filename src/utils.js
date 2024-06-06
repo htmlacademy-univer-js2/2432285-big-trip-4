@@ -1,43 +1,26 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import {
-  MAXIMUM_MINUTE_DIFFERENCE,
-  MAXIMUM_HOUR_DIFFERENCE,
-  RANDOM_NUMBER_MIN_LIMIT, MAXIMUM_DAY_DIFFERENCE
-} from './const';
+import {DATE_FORMAT, DATE_PERIODS} from './const';
 
 dayjs.extend(duration);
 
-const DATE_FORMAT = 'HH:mm';
-const DATE_PERIODS = {
-  HOURS_IN_DAY: 24,
-  MINUTES_IN_HOUR: 60,
-  SECONDS_IN_MINUTE: 60,
-  MSEC_IN_SECOND: 1000,
-  MSEC_IN_DAY: 24 * 60 * 60 * 1000,
-  MSEC_IN_HOUR: 60 * 60 * 1000
-};
-
-function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function getRandomNumber(min, max) {
-  const lowerNumber = Math.ceil(Math.min(min, max));
-  const upperNumber = Math.floor(Math.max(min, max));
-
-  return Math.floor(lowerNumber + Math.random() * (upperNumber - lowerNumber + 1));
-}
-
 function humanizeDate(dueDate, format = DATE_FORMAT) {
+  if (dueDate === null) {
+    return '';
+  }
+
   return dueDate ? dayjs(dueDate).format(format) : '';
 }
 
 function getDateDifference(dateFrom, dateTo) {
   const difference = dayjs(dateTo).diff(dayjs(dateFrom));
+  const days = dayjs(dateTo).diff(dayjs(dateFrom), 'days');
 
   let timeDifference = 0;
   switch (true) {
+    case difference >= DATE_PERIODS.MSEC_IN_HUNDRED_DAYS:
+      timeDifference = dayjs.duration(difference).format(`${days}[D] HH[H] mm[M]`);
+      break;
     case difference >= DATE_PERIODS.MSEC_IN_DAY:
       timeDifference = dayjs.duration(difference).format('DD[D] HH[H] mm[M]');
       break;
@@ -52,81 +35,38 @@ function getDateDifference(dateFrom, dateTo) {
   return timeDifference;
 }
 
-function getRandomDate(previousDate = 0) {
-  let date;
-
-  if (typeof previousDate !== 'number') {
-    date = generateFutureDate(previousDate);
-  } else {
-    date = generateRandomDate();
-  }
-
-  checkDateValidity(date, previousDate);
-
-  return date;
-}
-
-function generateFutureDate(previousDate) {
-  return dayjs(previousDate)
-    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-    .toDate();
-}
-
-function generateRandomDate() {
-  const isPastDate = getRandomNumber(0, RANDOM_NUMBER_MIN_LIMIT);
-  const date = isPastDate ?
-    dayjs().subtract(getRandomNumber(0, MAXIMUM_DAY_DIFFERENCE), 'day') :
-    dayjs();
-
-  return date
-    .add(getRandomNumber(0, MAXIMUM_HOUR_DIFFERENCE), 'hour')
-    .add(getRandomNumber(0, MAXIMUM_MINUTE_DIFFERENCE), 'minute')
-    .toDate();
-}
-
-function checkDateValidity(date, previousDate) {
-  if (date < previousDate) {
-    throw new Error(`New date ${date} is older than previous date ${previousDate}`);
-  }
-}
-
 function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
 }
 
-function getTripInfoTitle(cities) {
-  if (cities.length > 3) {
-    return `${cities[0]} &mdash; ... &mdash; ${cities[cities.length - 1]}`;
-  } else {
-    return cities.reduce((acc, city, index) => {
-      if (index !== cities.length - 1) {
-        acc += `${city} &mdash; `;
-      } else {
-        acc += `${city}`;
-      }
-      return acc;
-    }, '');
+function getTripInfoTitle(destinations) {
+  if (destinations.length > 3) {
+    return `${destinations[0]} &mdash; ... &mdash; ${destinations[destinations.length - 1]}`;
   }
+
+  return destinations.join(' &mdash; ');
 }
 
 function getTripInfoStartDate(sortedPoints) {
-  return dayjs(sortedPoints[0].dateFrom).format('MMM DD');
+  return sortedPoints[0] ? dayjs(sortedPoints[0].dateFrom).format('DD MMM') : '';
 }
 
 function getTripInfoEndDate(sortedPoints) {
-  const startDate = sortedPoints[0].dateFrom;
-  const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
-  if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
-    return dayjs(endDate).format('DD');
-  } else {
-    return dayjs(endDate).format('MMM DD');
+  if (!sortedPoints[0]) {
+    return '';
   }
+
+  const startDate = dayjs(sortedPoints[0].dateFrom);
+  const endDate = dayjs(sortedPoints[sortedPoints.length - 1].dateTo);
+
+  return startDate.format('MMM') === endDate.format('MMM')
+    ? endDate.format('DD MMM')
+    : endDate.format('DD MMM');
 }
 
 function getOffersCost(offerIds = [], offers = []) {
   return offerIds.reduce(
-    (result, id) => result + (offers.find((offer) => offer.id === id)?.basePrice ?? 0),
+    (result, id) => result + (offers.find((offer) => offer.id === id)?.price ?? 0),
     0
   );
 }
@@ -135,8 +75,8 @@ function getTripCost(points = [], offers = []) {
   return points.reduce(
     (result, point) =>
       result + point.basePrice + getOffersCost(point.offers, offers.find((offer) => point.type === offer.type)?.offers),
-    0);
+    0
+  );
 }
 
-export {getRandomArrayElement , getRandomNumber, getRandomDate, humanizeDate, getDateDifference,
-  getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};
+export {humanizeDate, getDateDifference, getTypeOffers, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle, getTripCost};
