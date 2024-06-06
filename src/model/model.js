@@ -1,22 +1,17 @@
 import Observable from '../framework/observable';
-import {DEFAULT_FILTER, DEFAULT_SORT, FILTER_OPTIONS, UPDATE_TYPE} from '../const';
+import { DEFAULT_FILTER, DEFAULT_SORT, FILTER_OPTIONS, UPDATE_TYPE } from '../const';
 
-
-export default class Model extends Observable{
+export default class Model extends Observable {
   #routePoints = [];
   #offersByTypes = [];
   #destinations = [];
-
   #filteredRoutePoints = null;
-
   #pointsApiService = null;
-
   #currentSort = DEFAULT_SORT;
   #currentFilter = DEFAULT_FILTER;
 
-  constructor({pointsApiService}) {
+  constructor({ pointsApiService }) {
     super();
-
     this.#pointsApiService = pointsApiService;
     this.#updateFilteredRoutePoints();
   }
@@ -25,13 +20,18 @@ export default class Model extends Observable{
     try {
       const routePoints = await this.#pointsApiService.routePoints;
       this.#routePoints = routePoints.map(this.#adaptToClient);
-    } catch(err) {
-      this.#routePoints = [];
+      this.#updateFilteredRoutePoints();
+    } catch (err) {
+      this.#routePoints = null;
     }
 
-    this.#destinations = await this.#pointsApiService.destinations;
-    this.#offersByTypes = await this.#pointsApiService.offers;
-    this.#updateFilteredRoutePoints();
+    try {
+      this.#destinations = await this.#pointsApiService.destinations;
+      this.#offersByTypes = await this.#pointsApiService.offers;
+    } catch (err) {
+      this.#routePoints = null;
+    }
+
     this._notify(UPDATE_TYPE.INIT);
   }
 
@@ -39,13 +39,8 @@ export default class Model extends Observable{
     const buttonsToDisable = [];
 
     for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
-      const filteredPoints = this.#routePoints.filter(filter);
+      const filteredPoints = this.routePoints ? this.#routePoints.filter(filter) : [];
       if (filteredPoints.length === 0) {
-        if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
-          buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
-          break;
-        }
-
         buttonsToDisable.push(key);
       }
     }
@@ -92,8 +87,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, updatedPoint);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t update task');
     }
   }
@@ -106,8 +100,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, newPoint);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t add task');
     }
   }
@@ -128,8 +121,7 @@ export default class Model extends Observable{
 
       this.#updateFilteredRoutePoints();
       this._notify(updateType, null);
-    }
-    catch(err) {
+    } catch (err) {
       throw new Error('Can\'t delete task');
     }
   }
@@ -165,6 +157,6 @@ export default class Model extends Observable{
   }
 
   get filteredRoutePoints() {
-    return this.#filteredRoutePoints;
+    return this.#routePoints === null ? null : this.#filteredRoutePoints;
   }
 }

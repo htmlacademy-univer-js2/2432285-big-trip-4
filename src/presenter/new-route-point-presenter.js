@@ -1,34 +1,40 @@
 import EditRoutePointView from '../view/edit-form-view';
-import {POINT_MODE, UPDATE_TYPE, USER_ACTION} from '../const';
-import {remove, render, RenderPosition} from '../framework/render';
-
+import { POINT_MODE, UPDATE_TYPE, USER_ACTION } from '../const';
+import { remove, render, RenderPosition } from '../framework/render';
 
 export default class NewRoutePointPresenter {
   #pointsListContainer = null;
-
   #handleDataChange = null;
-
+  #handleModelUpdateOnCancel = null;
+  #hasAtLeastOnePoint = null;
   #newPointComponent = null;
-
   #addPointButton = null;
-
   #offersByTypes = [];
   #destinations = [];
 
-  constructor({offersByTypes, destinations, addPointButton, pointsListContainer, onDataChange}) {
+  constructor({
+    offersByTypes,
+    destinations,
+    addPointButton,
+    pointsListContainer,
+    onDataChange,
+    onCancel,
+    hasAtLeastOnePoint
+  }) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
-
     this.#addPointButton = addPointButton;
-
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModelUpdateOnCancel = onCancel;
+    this.#hasAtLeastOnePoint = hasAtLeastOnePoint;
   }
 
   init() {
     if (this.#newPointComponent !== null) {
       return;
     }
+
     document.addEventListener('keydown', this.#escKeyDownHandler);
 
     this.#newPointComponent = new EditRoutePointView({
@@ -47,33 +53,44 @@ export default class NewRoutePointPresenter {
     if (this.#newPointComponent === null) {
       return;
     }
+
     remove(this.#newPointComponent);
     this.#newPointComponent = null;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+
+    this.#addPointButton.disabled = false;
+
+    if (!this.#hasAtLeastOnePoint) {
+      this.#handleModelUpdateOnCancel(UPDATE_TYPE.MINOR);
+    }
   }
 
   setSaving() {
     this.#newPointComponent.updateElement({
-      isDisabled: true,
-      isSaving: true,
+      networkState: {
+        isDisabled: true,
+        isSaving: true,
+        isDeleting: false
+      }
     });
   }
 
   setAborting() {
     const resetFormState = () => {
       this.#newPointComponent.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
+        networkState: {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
       });
     };
 
-    // this.#newPointComponent.shake(resetFormState);
+    this.#newPointComponent.shake(resetFormState);
   }
 
   #handleFormSubmit = (routePoint) => {
     if (routePoint.destination !== null) {
-
       this.#addPointButton.disabled = false;
 
       this.#handleDataChange(
@@ -85,16 +102,13 @@ export default class NewRoutePointPresenter {
   };
 
   #handleCancelNewPoint = () => {
-    this.#addPointButton.disabled = false;
     this.destroy();
   };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      this.#addPointButton.disabled = false;
       this.destroy();
     }
   };
 }
-
