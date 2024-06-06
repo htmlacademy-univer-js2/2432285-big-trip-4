@@ -6,7 +6,7 @@ import InfoView from '../view/info-view';
 import FiltersView from '../view/filters-view';
 import {ADD_POINT_BUTTON, SITE_LIST_FILTER, TRIP_MAIN} from './const-elements';
 import {
-  DEFAULT_FILTER, DEFAULT_FILTER_NAME, DEFAULT_SORT,
+  DEFAULT_FILTER, DEFAULT_SORT,
   NO_ROUTE_POINTS_WARNING,
   UPDATE_TYPE,
   USER_ACTION
@@ -17,7 +17,7 @@ import NewRoutePointPresenter from './new-route-point-presenter';
 import LoadingView from '../view/loading-view';
 import UiBlocker from '../framework/ui-blocker/ui-blocker';
 
-const TimeLimit = {
+const TIME_LIMIT = {
   LOWER_LIMIT: 350,
   UPPER_LIMIT: 1000,
 };
@@ -39,8 +39,8 @@ export default class Presenter {
   #warning = null;
   #isLoading = true;
   #uiBlocker = new UiBlocker({
-    lowerLimit: TimeLimit.LOWER_LIMIT,
-    upperLimit: TimeLimit.UPPER_LIMIT
+    lowerLimit: TIME_LIMIT.LOWER_LIMIT,
+    upperLimit: TIME_LIMIT.UPPER_LIMIT
   });
 
   #pointPresenters = new Map();
@@ -71,59 +71,68 @@ export default class Presenter {
   }
 
   #renderTrip({renderAfterHardReset = true} = {}) {
+    this.#renderSortView();
+
+    if (renderAfterHardReset) {
+      render(this.#eventListComponent, this.#container);
+
+      if (this.routePoints === null) {
+        this.#renderNoRoutePointsWarning(NO_ROUTE_POINTS_WARNING.LOAD_FAIL);
+        return;
+      }
+
+      this.#infoViewComponent = new InfoView(this.routePoints, this.destinations, this.offersByTypes);
+      render(this.#infoViewComponent, TRIP_MAIN, RenderPosition.AFTERBEGIN);
+      this.#renderFilterView();
+    }
+
     if (this.#isLoading) {
       this.#renderLoading();
       return;
     }
 
-    if (renderAfterHardReset) {
-      this.#infoViewComponent = new InfoView(this.routePoints, this.destinations, this.offersByTypes);
-      render(this.#infoViewComponent, TRIP_MAIN, RenderPosition.AFTERBEGIN);
-      this.#renderSortedFilter();
-
-      render(this.#eventListComponent, this.#container);
-    }
-
-    if (this.#warning === null && this.routePoints.length !== 0){
+    if (this.#warning === null && this.routePoints !== null && this.routePoints.length !== 0){
       this.#renderAllRoutePoints(this.routePoints);
     }
     else {
-      this.#renderNoRoutePointsWarning(this.#warning === null
-        ? NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName]
-        : this.#warning);
+      this.#renderNoRoutePointsWarning(this.#warning);
       this.#warning = null;
     }
   }
 
-  #renderSortedFilter() {
-    const buttonsToDisable = this.#modifyDisabledFilterButtons();
 
-    this.#sortViewComponent = this.#createSortViewComponent();
+  #renderFilterView() {
+    const buttonsToDisable = this.#model.getFilterButtonsToDisable();
+
     this.#filterViewComponent = new FiltersView({onFilterChange: () => {
       this.#model.currentFilter = this.#filterViewComponent.currentFilter;
-      if (this.routePoints.length === 0) {
-        this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
-      }
+
+      this.#updateWarning();
+
+      this.#model.currentSort = DEFAULT_SORT;
       this.#handleModelEvent(UPDATE_TYPE.MINOR, null);
     }, buttonsToDisable});
 
-    this.#model.currentFilter = this.#filterViewComponent.currentFilter;
-    if (this.routePoints.length === 0) {
-      this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
-    }
+    this.#updateWarning();
 
     render(this.#filterViewComponent, SITE_LIST_FILTER);
-    render(this.#sortViewComponent, this.#container);
   }
 
+  #updateWarning() {
+    if (this.routePoints !== null && this.routePoints.length === 0) {
+      this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
+    }
+  }
 
-  #createSortViewComponent() {
-    const sortViewComponent = new SortView({onSortChange: () => {
-      this.#model.currentSort = sortViewComponent.currentSort;
-      this.#handleModelEvent(UPDATE_TYPE.MINOR, null);
-    }});
+  #renderSortView() {
+    this.#sortViewComponent = new SortView({
+      currentSort: this.#model.currentSort,
+      onSortChange: () => {
+        this.#model.currentSort = this.#sortViewComponent.currentSort;
+        this.#handleModelEvent(UPDATE_TYPE.MINOR, null);
+      }});
 
-    return sortViewComponent;
+    render(this.#sortViewComponent, this.#container, RenderPosition.AFTERBEGIN);
   }
 
   #renderNoRoutePointsWarning(warning) {
@@ -167,11 +176,11 @@ export default class Presenter {
         this.#newPointPresenter.setSaving();
         try {
           await this.#model.addPoint(updateType, update);
+          this.#newPointPresenter.destroy();
         } catch(err) {
           this.#newPointPresenter.setAborting();
         }
 
-        this.#newPointPresenter.destroy();
         break;
       case USER_ACTION.DELETE_POINT:
         this.#pointPresenters.get(update.id).setDeleting();
@@ -186,16 +195,6 @@ export default class Presenter {
 
     this.#uiBlocker.unblock();
   };
-
-  #modifyDisabledFilterButtons() {
-    let buttonsToDisable = this.#model.getFilterButtonsToDisable();
-
-    if (buttonsToDisable.includes(DEFAULT_FILTER_NAME)) {
-      this.#warning = NO_ROUTE_POINTS_WARNING[DEFAULT_FILTER_NAME];
-      buttonsToDisable = buttonsToDisable.slice(1);
-    }
-    return buttonsToDisable;
-  }
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
@@ -225,6 +224,8 @@ export default class Presenter {
     this.#addPointButton.disabled = false;
     this.#warning = null;
     remove(this.#loadingComponent);
+    remove(this.#sortViewComponent);
+    this.#updateWarning();
 
     if (this.#noRoutePointsWarningComponent !== null) {
       remove(this.#noRoutePointsWarningComponent);
@@ -233,7 +234,6 @@ export default class Presenter {
     if (resetAll) {
       remove(this.#infoViewComponent);
       remove(this.#filterViewComponent);
-      remove(this.#sortViewComponent);
     }
   }
 
@@ -275,7 +275,9 @@ export default class Presenter {
       destinations: this.destinations,
       addPointButton: this.#addPointButton,
       pointsListContainer: this.#eventListComponent.element,
-      onDataChange: this.#handleViewAction
+      onDataChange: this.#handleViewAction,
+      onCancel: this.#handleModelEvent,
+      hasAtLeastOnePoint: this.routePoints.length > 0
     });
 
     this.#newPointPresenter.init();

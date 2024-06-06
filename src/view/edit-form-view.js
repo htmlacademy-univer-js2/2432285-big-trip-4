@@ -98,14 +98,14 @@ function createEditRoutePointTemplate(state, offersByType, destinations, mode) {
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}" min="0" max="100000" ${isDisabled ? 'disabled' : '' }>
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}" min="0" max="1000000000" ${isDisabled ? 'disabled' : '' }>
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : '' }>
                   ${isSaving ? EDIT_POINT_VIEW_BUTTON_TEXT.LOAD_SAVE : EDIT_POINT_VIEW_BUTTON_TEXT.SAVE}
                   </button>
                   ${createButtonTemplate(mode, isDisabled, isDeleting)}
-                  ${mode === POINT_MODE.EDITING ? `<button class="event__rollup-btn" type="button">
+                  ${mode === POINT_MODE.EDITING ? `<button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
                     <span class="visually-hidden">Open event</span>
                   </button>` : ''}
                 </header>

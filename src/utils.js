@@ -25,7 +25,11 @@ function getDateDifference(dateFrom, dateTo) {
   const difference = dayjs(dateTo).diff(dayjs(dateFrom));
 
   let timeDifference = 0;
+  const days = dayjs(dateTo).diff(dayjs(dateFrom), 'days');
   switch (true) {
+    case difference >= DATE_PERIODS.MSEC_IN_DAY * 100:
+      timeDifference = dayjs.duration(difference).format(`${days}[D] HH[H] mm[M]`);
+      break;
     case difference >= DATE_PERIODS.MSEC_IN_DAY:
       timeDifference = dayjs.duration(difference).format('DD[D] HH[H] mm[M]');
       break;
@@ -39,7 +43,6 @@ function getDateDifference(dateFrom, dateTo) {
 
   return timeDifference;
 }
-
 
 function getTypeOffers(type, offersByTypes) {
   return offersByTypes.filter((obj) => obj.type === type)[0].offers;
@@ -61,7 +64,7 @@ function getTripInfoTitle(cities) {
 }
 
 function getTripInfoStartDate(sortedPoints) {
-  return sortedPoints[0] ? dayjs(sortedPoints[0].dateFrom).format('MMM DD') : '';
+  return sortedPoints[0] ? dayjs(sortedPoints[0].dateFrom).format('DD MMM') : '';
 }
 
 function getTripInfoEndDate(sortedPoints) {
@@ -73,20 +76,24 @@ function getTripInfoEndDate(sortedPoints) {
 
   const endDate = sortedPoints[sortedPoints.length - 1].dateTo;
   if (dayjs(startDate).format('MMM') === dayjs(endDate).format('MMM')) {
-    return dayjs(endDate).format('DD');
+    return dayjs(endDate).format('DD MMM');
   } else {
-    return dayjs(endDate).format('MMM DD');
+    return dayjs(endDate).format('DD MMM');
   }
 }
 
 function getOffersCost(offerIds = [], offers = []) {
   return offerIds.reduce(
-    (result, id) => result + (offers.find((offer) => offer.id === id)?.basePrice ?? 0),
+    (result, id) => result + (offers.find((offer) => offer.id === id)?.price ?? 0),
     0
   );
 }
 
 function getTripCost(points = [], offers = []) {
+  if (points === null) {
+    return 0;
+  }
+
   return points.reduce(
     (result, point) =>
       result + point.basePrice + getOffersCost(point.offers, offers.find((offer) => point.type === offer.type)?.offers),

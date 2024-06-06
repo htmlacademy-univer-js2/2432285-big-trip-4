@@ -25,13 +25,13 @@ export default class Model extends Observable{
     try {
       const routePoints = await this.#pointsApiService.routePoints;
       this.#routePoints = routePoints.map(this.#adaptToClient);
+      this.#updateFilteredRoutePoints();
     } catch(err) {
-      this.#routePoints = [];
+      this.#routePoints = null;
     }
 
     this.#destinations = await this.#pointsApiService.destinations;
     this.#offersByTypes = await this.#pointsApiService.offers;
-    this.#updateFilteredRoutePoints();
     this._notify(UPDATE_TYPE.INIT);
   }
 
@@ -39,13 +39,8 @@ export default class Model extends Observable{
     const buttonsToDisable = [];
 
     for (const [key, filter] of Object.entries(FILTER_OPTIONS)) {
-      const filteredPoints = this.#routePoints.filter(filter);
+      const filteredPoints = this.routePoints ? this.#routePoints.filter(filter) : [];
       if (filteredPoints.length === 0) {
-        if (DEFAULT_FILTER === FILTER_OPTIONS[key]) {
-          buttonsToDisable.push(...Object.keys(FILTER_OPTIONS));
-          break;
-        }
-
         buttonsToDisable.push(key);
       }
     }
@@ -70,6 +65,7 @@ export default class Model extends Observable{
   }
 
   #updateFilteredRoutePoints() {
+
     this.#filteredRoutePoints = this.#routePoints.filter(this.#currentFilter);
     this.#filteredRoutePoints.sort(this.#currentSort);
   }
@@ -165,6 +161,6 @@ export default class Model extends Observable{
   }
 
   get filteredRoutePoints() {
-    return this.#filteredRoutePoints;
+    return this.#routePoints === null ? null : this.#filteredRoutePoints;
   }
 }

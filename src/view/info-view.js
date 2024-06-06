@@ -2,10 +2,16 @@ import AbstractView from '../framework/view/abstract-view';
 import {getTripCost, getTripInfoEndDate, getTripInfoStartDate, getTripInfoTitle} from '../utils';
 
 function createInfoViewTemplate(points, destinations, offers) {
-  const totalCost = getTripCost(points,offers);
+  const totalCost = getTripCost(points, offers);
+
+  if (totalCost === 0) {
+    return '<section class="trip-main__trip-info  trip-info"> </section>';
+  }
+
   const sortedPoints = points.sort((firstDate, secondDate) => new Date(firstDate.dateFrom) - new Date(secondDate.dateFrom));
   const cities = sortedPoints.map((point) => destinations.find((destination) => destination.id === point.destination).name);
   const tripInfoTitle = getTripInfoTitle(cities);
+
   return (
     `<section class="trip-main__trip-info  trip-info">
             <div class="trip-info__main">

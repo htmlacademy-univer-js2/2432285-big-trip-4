@@ -77,8 +77,11 @@ export default class RoutePointPresenter {
   setSaving() {
     if (this.#mode === POINT_MODE.EDITING) {
       this.#editRoutePointComponent.updateElement({
-        isDisabled: true,
-        isSaving: true,
+        networkState: {
+          isDisabled: true,
+          isSaving: true,
+          isDeleting: false
+        }
       });
     }
   }
@@ -86,8 +89,10 @@ export default class RoutePointPresenter {
   setDeleting() {
     if (this.#mode === POINT_MODE.EDITING) {
       this.#editRoutePointComponent.updateElement({
-        isDisabled: true,
-        isDeleting: true,
+        networkState: {
+          isDisabled: true,
+          isDeleting: true,
+        }
       });
     }
   }
@@ -100,9 +105,11 @@ export default class RoutePointPresenter {
 
     const resetFormState = () => {
       this.#editRoutePointComponent.updateElement({
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
+        networkState: {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        }
       });
     };
 
@@ -118,9 +125,9 @@ export default class RoutePointPresenter {
   }
 
   #replacePointToEditView() {
+    this.#handleModeChange();
     replace(this.#editRoutePointComponent, this.#routePointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
-    this.#handleModeChange();
     this.#mode = POINT_MODE.EDITING;
   }
 
@@ -132,8 +139,8 @@ export default class RoutePointPresenter {
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
-      this.#replaceEditToPointView();
       this.#editRoutePointComponent.reset(this.#routePoint);
+      this.#replaceEditToPointView();
     }
   };
 
@@ -144,7 +151,7 @@ export default class RoutePointPresenter {
   #handleFormSubmit = (routePoint) => {
     this.#handleDataChange(
       USER_ACTION.UPDATE_POINT,
-      UPDATE_TYPE.MINOR,
+      UPDATE_TYPE.MAJOR,
       routePoint,
     );
   };

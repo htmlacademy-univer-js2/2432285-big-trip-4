@@ -7,6 +7,8 @@ export default class NewRoutePointPresenter {
   #pointsListContainer = null;
 
   #handleDataChange = null;
+  #handleModelUpdateOnCancel = null;
+  #hasAtLeastOnePoint = null;
 
   #newPointComponent = null;
 
@@ -15,7 +17,7 @@ export default class NewRoutePointPresenter {
   #offersByTypes = [];
   #destinations = [];
 
-  constructor({offersByTypes, destinations, addPointButton, pointsListContainer, onDataChange}) {
+  constructor({offersByTypes, destinations, addPointButton, pointsListContainer, onDataChange, onCancel, hasAtLeastOnePoint}) {
     this.#offersByTypes = offersByTypes;
     this.#destinations = destinations;
 
@@ -23,6 +25,8 @@ export default class NewRoutePointPresenter {
 
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModelUpdateOnCancel = onCancel;
+    this.#hasAtLeastOnePoint = hasAtLeastOnePoint;
   }
 
   init() {
@@ -50,6 +54,12 @@ export default class NewRoutePointPresenter {
     remove(this.#newPointComponent);
     this.#newPointComponent = null;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+
+    this.#addPointButton.disabled = false;
+
+    if (!this.#hasAtLeastOnePoint) {
+      this.#handleModelUpdateOnCancel(UPDATE_TYPE.MINOR, null);
+    }
   }
 
   setSaving() {
@@ -90,14 +100,12 @@ export default class NewRoutePointPresenter {
   };
 
   #handleCancelNewPoint = () => {
-    this.#addPointButton.disabled = false;
     this.destroy();
   };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      this.#addPointButton.disabled = false;
       this.destroy();
     }
   };
