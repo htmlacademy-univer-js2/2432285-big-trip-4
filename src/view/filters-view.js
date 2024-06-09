@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
-import { FILTER_OPTIONS, DEFAULT_FILTER, DEFAULT_FILTER_NAME } from '../const';
+import { FILTER_OPTIONS, DEFAULT_FILTER} from '../const';
 
 function createFilterButton(filterName, isChecked, isDisabled) {
   const lowerCaseFilterName = filterName.toLowerCase();
@@ -20,9 +20,9 @@ function createFilterButton(filterName, isChecked, isDisabled) {
     </div>`;
 }
 
-function createFiltersTemplate(disabledButtons) {
+function createFiltersTemplate(disabledButtons, currentFilterName) {
   const filtersMarkup = Object.keys(FILTER_OPTIONS).map((filterName) => {
-    const isChecked = DEFAULT_FILTER === FILTER_OPTIONS[filterName];
+    const isChecked = currentFilterName === filterName;
     const isDisabled = disabledButtons.includes(filterName);
     return createFilterButton(filterName, isChecked, isDisabled);
   }).join('');
@@ -36,14 +36,16 @@ function createFiltersTemplate(disabledButtons) {
 
 export default class FiltersView extends AbstractView {
   #currentFilter = DEFAULT_FILTER;
-  #currentFilterName = DEFAULT_FILTER_NAME;
+  #currentFilterName = null;
   #handleFilterChange = null;
   #disabledButtons = [];
 
-  constructor({ onFilterChange, buttonsToDisable }) {
+  constructor({ onFilterChange, buttonsToDisable, currentFilter = DEFAULT_FILTER}) {
     super();
     this.#handleFilterChange = onFilterChange;
     this.#disabledButtons = buttonsToDisable;
+    this.#currentFilter = currentFilter;
+    this.#currentFilterName = Object.keys(FILTER_OPTIONS).find((filterName) => (currentFilter === FILTER_OPTIONS[filterName]));
     this.#setFilterChangeHandler();
   }
 
@@ -56,7 +58,7 @@ export default class FiltersView extends AbstractView {
   }
 
   get template() {
-    return createFiltersTemplate(this.#disabledButtons);
+    return createFiltersTemplate(this.#disabledButtons, this.#currentFilterName);
   }
 
   #setFilterChangeHandler() {
