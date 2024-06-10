@@ -74,13 +74,15 @@ export default class Presenter {
       render(this.#eventListComponent, this.#container);
 
       if (this.routePoints === null) {
+        this.#addPointButton.disabled = true;
         this.#renderNoRoutePointsWarning(NO_ROUTE_POINTS_WARNING.LOAD_FAIL);
         return;
       }
 
+      this.#renderFilterView();
+
       this.#infoViewComponent = new InfoView(this.routePoints, this.destinations, this.offersByTypes);
       render(this.#infoViewComponent, TRIP_MAIN, RenderPosition.AFTERBEGIN);
-      this.#renderFilterView();
     }
 
     if (this.#isLoading) {
@@ -106,17 +108,33 @@ export default class Presenter {
         this.#model.currentSort = DEFAULT_SORT;
         this.#handleModelEvent(UPDATE_TYPE.MINOR);
       },
-      buttonsToDisable
+      buttonsToDisable,
+      currentFilter: this.#getCurrentFilter()
     });
+
+    if (this.routePoints.length === 0) {
+      this.#model.currentFilter = this.#filterViewComponent.currentFilter;
+    }
 
     this.#updateWarning();
 
     render(this.#filterViewComponent, SITE_LIST_FILTER);
   }
 
+  #getCurrentFilter() {
+    if (this.routePoints.length === 0) {
+      this.#model.currentFilter = DEFAULT_FILTER;
+    }
+
+    return this.#model.currentFilter;
+  }
+
   #updateWarning() {
     if (this.routePoints !== null && this.routePoints.length === 0) {
       this.#warning = NO_ROUTE_POINTS_WARNING[this.#filterViewComponent.currentFilterName];
+    }
+    else {
+      this.#warning = null;
     }
   }
 
@@ -187,23 +205,23 @@ export default class Presenter {
   #handleModelEvent = (updateType) => {
     switch (updateType) {
       case UPDATE_TYPE.MINOR:
-        this.#clearPointList();
+        this.#clearTrip();
         this.#renderTrip({ renderAfterHardReset: false });
         break;
       case UPDATE_TYPE.MAJOR:
-        this.#clearPointList({ resetAll: true });
+        this.#clearTrip({ resetAll: true });
         this.#renderTrip();
         break;
       case UPDATE_TYPE.INIT:
         this.#isLoading = false;
         this.#addPointButton.disabled = false;
-        this.#clearPointList({ resetAll: true });
+        this.#clearTrip({ resetAll: true });
         this.#renderTrip();
         break;
     }
   };
 
-  #clearPointList({ resetAll = false } = {}) {
+  #clearTrip({ resetAll = false } = {}) {
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();
     this.#addPointButton.disabled = false;
@@ -247,7 +265,7 @@ export default class Presenter {
 
     this.#resetSortAndFilter();
     if (this.routePoints.length === 0) {
-      this.#clearPointList();
+      this.#clearTrip();
     }
 
     this.#renderNewPoint();

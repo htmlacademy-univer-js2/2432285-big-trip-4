@@ -99,6 +99,9 @@ export default class NewRoutePointPresenter {
         routePoint,
       );
     }
+    else {
+      this.setAborting();
+    }
   };
 
   #handleCancelNewPoint = () => {
