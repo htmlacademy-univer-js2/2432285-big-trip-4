@@ -1,4 +1,4 @@
-import EditRoutePointView from '../view/edit-form-view';
+import EditRoutePointView from '../view/edit-route-point-view';
 import { POINT_MODE, UPDATE_TYPE, USER_ACTION } from '../const';
 import { remove, render, RenderPosition } from '../framework/render';
 

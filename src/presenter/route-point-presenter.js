@@ -1,5 +1,5 @@
 import RoutePointView from '../view/route-point-view';
-import EditRoutePointView from '../view/edit-form-view';
+import EditRoutePointView from '../view/edit-route-point-view';
 import { remove, render, replace } from '../framework/render';
 import { POINT_MODE, UPDATE_TYPE, USER_ACTION } from '../const';
 
@@ -71,6 +71,7 @@ export default class RoutePointPresenter {
   destroy() {
     remove(this.#routePointComponent);
     remove(this.#editRoutePointComponent);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   setSaving() {
@@ -110,8 +111,8 @@ export default class RoutePointPresenter {
 
   #replaceEditToPointView() {
     replace(this.#routePointComponent, this.#editRoutePointComponent);
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = POINT_MODE.DEFAULT;
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #escKeyDownHandler = (evt) => {
