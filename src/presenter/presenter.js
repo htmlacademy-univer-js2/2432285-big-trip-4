@@ -226,7 +226,6 @@ export default class Presenter {
     this.#pointPresenters.clear();
     this.#addPointButton.disabled = false;
     this.#warning = null;
-    this.#handleModeChange();
     remove(this.#loadingComponent);
     remove(this.#sortViewComponent);
     this.#updateWarning();
