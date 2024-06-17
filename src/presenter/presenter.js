@@ -47,6 +47,10 @@ export default class Presenter {
     return this.#model.filteredRoutePoints;
   }
 
+  get allRoutePoints() {
+    return this.#model.routePoints;
+  }
+
   get offersByTypes() {
     return this.#model.offersByTypes;
   }
@@ -68,7 +72,9 @@ export default class Presenter {
   }
 
   #renderTrip({ renderAfterHardReset = true } = {}) {
-    this.#renderSortView();
+    if (this.#warning === null && !this.#isLoading && this.routePoints !== null) {
+      this.#renderSortView();
+    }
 
     if (renderAfterHardReset) {
       render(this.#eventListComponent, this.#container);
@@ -81,7 +87,7 @@ export default class Presenter {
 
       this.#renderFilterView();
 
-      this.#infoViewComponent = new InfoView(this.routePoints, this.destinations, this.offersByTypes);
+      this.#infoViewComponent = new InfoView(this.allRoutePoints, this.destinations, this.offersByTypes);
       render(this.#infoViewComponent, TRIP_MAIN, RenderPosition.AFTERBEGIN);
     }
 
@@ -109,24 +115,14 @@ export default class Presenter {
         this.#handleModelEvent(UPDATE_TYPE.MINOR);
       },
       buttonsToDisable,
-      currentFilter: this.#getCurrentFilter()
+      currentFilter: this.#model.currentFilter
     });
 
     if (this.routePoints.length === 0) {
       this.#model.currentFilter = this.#filterViewComponent.currentFilter;
     }
 
-    this.#updateWarning();
-
     render(this.#filterViewComponent, SITE_LIST_FILTER);
-  }
-
-  #getCurrentFilter() {
-    if (this.routePoints.length === 0) {
-      this.#model.currentFilter = DEFAULT_FILTER;
-    }
-
-    return this.#model.currentFilter;
   }
 
   #updateWarning() {
@@ -222,10 +218,15 @@ export default class Presenter {
   };
 
   #clearTrip({ resetAll = false } = {}) {
+    if (this.#newPointPresenter) {
+      this.#newPointPresenter.destroy();
+    }
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
+
     this.#pointPresenters.clear();
     this.#addPointButton.disabled = false;
     this.#warning = null;
+    this.#handleModeChange();
     remove(this.#loadingComponent);
     remove(this.#sortViewComponent);
     this.#updateWarning();
